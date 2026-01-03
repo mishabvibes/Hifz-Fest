@@ -45,6 +45,7 @@ const studentSchema = z.object({
   name: z.string().min(2),
   team_id: z.string().min(2),
   chest_no: z.string().optional(),
+  category: z.enum(["junior", "senior"]),
 });
 
 const csvStudentSchema = z.object({
@@ -52,6 +53,7 @@ const csvStudentSchema = z.object({
   team_id: z.string().min(2).optional(),
   team_name: z.string().min(2).optional(),
   chest_no: z.string().optional(),
+  category: z.enum(["junior", "senior"]).optional(),
 }).refine((data) => data.team_id || data.team_name, {
   message: "Either team_id or team_name is required",
   path: ["team_id"],
@@ -63,6 +65,7 @@ async function upsertStudent(formData: FormData, mode: "create" | "update") {
     name: String(formData.get("name") ?? "").trim(),
     team_id: String(formData.get("team_id") ?? "").trim(),
     chest_no: String(formData.get("chest_no") ?? "").trim() || undefined,
+    category: String(formData.get("category") ?? "").trim(),
   });
   if (!parsed.success) {
     throw new Error(parsed.error.issues.map((issue) => issue.message).join(", "));
@@ -70,7 +73,7 @@ async function upsertStudent(formData: FormData, mode: "create" | "update") {
   const payload = parsed.data;
 
   let chest_no = payload.chest_no;
-  
+
   if (mode === "create" && !chest_no) {
     const [students, teams] = await Promise.all([getStudents(), getTeams()]);
     const team = teams.find((t) => t.id === payload.team_id);
@@ -92,6 +95,7 @@ async function upsertStudent(formData: FormData, mode: "create" | "update") {
       name: payload.name,
       team_id: payload.team_id,
       chest_no: chest_no!,
+      category: payload.category,
     });
   } else {
     if (!payload.id) throw new Error("Student ID missing");
@@ -99,6 +103,7 @@ async function upsertStudent(formData: FormData, mode: "create" | "update") {
       name: payload.name,
       team_id: payload.team_id,
       chest_no: chest_no!,
+      category: payload.category,
     });
   }
 
@@ -187,19 +192,25 @@ function parseStudentCsv(content: string) {
   const headers = headerLine
     .split(",")
     .map((header) => header.trim().toLowerCase());
-  
+
   // Accept either team_id or team_name
   const hasTeamId = headers.includes("team_id");
   const hasTeamName = headers.includes("team_name");
-  
+
   if (!hasTeamId && !hasTeamName) {
     throw new Error('Missing "team_id" or "team_name" column in CSV header.');
   }
-  
+
   const requiredHeaders = ["name"];
   if (hasTeamId) requiredHeaders.push("team_id");
   if (hasTeamName) requiredHeaders.push("team_name");
-  
+
+  // Optional headers to track if present
+  const hasCategory = headers.includes("category");
+  if (hasCategory) requiredHeaders.push("category");
+  const hasChestNo = headers.includes("chest_no");
+  if (hasChestNo) requiredHeaders.push("chest_no");
+
   for (const column of requiredHeaders) {
     if (!headers.includes(column)) {
       throw new Error(`Missing "${column}" column in CSV header.`);
@@ -234,109 +245,110 @@ async function importStudentsAction(formData: FormData) {
       redirectWithToast("/admin/students", "CSV file does not contain any data rows.", "error");
       return;
     }
-  const teams = await getTeams();
-  const teamIds = new Set(teams.map((team) => team.id));
-  const teamNameToId = new Map(teams.map((team) => [team.name.toUpperCase(), team.id]));
-  
-  // Get all existing students once to check for duplicates
-  const existingStudents = await getStudents();
-  const existingChestNumbers = new Set(
-    existingStudents.map((s) => s.chest_no.trim().toUpperCase())
-  );
-  
-  // Track chest numbers within this import batch to prevent duplicates in the same CSV
-  const importBatchChestNumbers = new Set<string>();
-  
-  for (const entry of entries) {
-    // Skip empty rows
-    if (!entry.data.name || !entry.data.name.trim()) {
-      continue;
-    }
-    
-    const parsed = csvStudentSchema.safeParse(entry.data);
-    if (!parsed.success) {
-      const message = parsed.error.issues.map((issue) => issue.message).join(", ");
-      revalidatePath("/admin/students");
-      redirectWithToast("/admin/students", `Row ${entry.row}: ${message}`, "error");
-      return;
-    }
-    
-    // Resolve team_id: check if provided value is a valid team_id, otherwise treat as team_name
-    let resolvedTeamId = parsed.data.team_id;
-    
-    // If team_id is provided but not found in valid IDs, try treating it as a team name
-    if (resolvedTeamId && !teamIds.has(resolvedTeamId)) {
-      const teamNameUpper = resolvedTeamId.toUpperCase();
-      const foundId = teamNameToId.get(teamNameUpper);
-      if (foundId) {
-        resolvedTeamId = foundId;
+    const teams = await getTeams();
+    const teamIds = new Set(teams.map((team) => team.id));
+    const teamNameToId = new Map(teams.map((team) => [team.name.toUpperCase(), team.id]));
+
+    // Get all existing students once to check for duplicates
+    const existingStudents = await getStudents();
+    const existingChestNumbers = new Set(
+      existingStudents.map((s) => s.chest_no.trim().toUpperCase())
+    );
+
+    // Track chest numbers within this import batch to prevent duplicates in the same CSV
+    const importBatchChestNumbers = new Set<string>();
+
+    for (const entry of entries) {
+      // Skip empty rows
+      if (!entry.data.name || !entry.data.name.trim()) {
+        continue;
       }
-    }
-    
-    // If still no team_id, try team_name field
-    if (!resolvedTeamId && parsed.data.team_name) {
-      const teamNameUpper = parsed.data.team_name.toUpperCase();
-      resolvedTeamId = teamNameToId.get(teamNameUpper);
-    }
-    
-    if (!resolvedTeamId) {
-      const providedValue = parsed.data.team_id || parsed.data.team_name || "";
-      revalidatePath("/admin/students");
-      redirectWithToast("/admin/students", `Row ${entry.row}: Team "${providedValue}" not found. Available teams: ${Array.from(teamNameToId.keys()).join(", ")}`, "error");
-      return;
-    }
-    
-    const team = teams.find((t) => t.id === resolvedTeamId);
-    if (!team) {
-      revalidatePath("/admin/students");
-      redirectWithToast("/admin/students", `Row ${entry.row}: Team not found`, "error");
-      return;
-    }
-    
-    // Generate or use provided chest number, normalized to uppercase
-    const chest_no = parsed.data.chest_no?.trim().toUpperCase() || generateNextChestNumber(team.name, existingStudents);
-    
-    // Check for duplicate chest number in existing database
-    if (existingChestNumbers.has(chest_no)) {
-      const existingStudent = existingStudents.find((s) => s.chest_no.toUpperCase() === chest_no);
-      revalidatePath("/admin/students");
-      redirectWithToast("/admin/students", `Row ${entry.row}: Chest number "${chest_no}" already exists in database (assigned to "${existingStudent?.name || "unknown student"}").`, "error");
-      return;
-    }
-    
-    // Check for duplicate chest number within this import batch
-    if (importBatchChestNumbers.has(chest_no)) {
-      revalidatePath("/admin/students");
-      redirectWithToast("/admin/students", `Row ${entry.row}: Chest number "${chest_no}" is duplicated within this CSV file. Each chest number must be unique.`, "error");
-      return;
-    }
-    
-    // Add to batch tracking
-    importBatchChestNumbers.add(chest_no);
-    
-    try {
-      await createStudent({
-        name: parsed.data.name,
-        team_id: resolvedTeamId,
-        chest_no,
-      });
-      
-      // Add to existing set to prevent duplicates in subsequent rows of the same import
-      existingChestNumbers.add(chest_no);
-    } catch (error: any) {
-      // Provide user-friendly error message
-      if (error.message.includes("Chest number")) {
+
+      const parsed = csvStudentSchema.safeParse(entry.data);
+      if (!parsed.success) {
+        const message = parsed.error.issues.map((issue) => issue.message).join(", ");
         revalidatePath("/admin/students");
-        redirectWithToast("/admin/students", `Row ${entry.row}: ${error.message}`, "error");
+        redirectWithToast("/admin/students", `Row ${entry.row}: ${message}`, "error");
         return;
       }
-      revalidatePath("/admin/students");
-      redirectWithToast("/admin/students", `Row ${entry.row}: Failed to create student - ${error.message}`, "error");
-      return;
+
+      // Resolve team_id: check if provided value is a valid team_id, otherwise treat as team_name
+      let resolvedTeamId = parsed.data.team_id;
+
+      // If team_id is provided but not found in valid IDs, try treating it as a team name
+      if (resolvedTeamId && !teamIds.has(resolvedTeamId)) {
+        const teamNameUpper = resolvedTeamId.toUpperCase();
+        const foundId = teamNameToId.get(teamNameUpper);
+        if (foundId) {
+          resolvedTeamId = foundId;
+        }
+      }
+
+      // If still no team_id, try team_name field
+      if (!resolvedTeamId && parsed.data.team_name) {
+        const teamNameUpper = parsed.data.team_name.toUpperCase();
+        resolvedTeamId = teamNameToId.get(teamNameUpper);
+      }
+
+      if (!resolvedTeamId) {
+        const providedValue = parsed.data.team_id || parsed.data.team_name || "";
+        revalidatePath("/admin/students");
+        redirectWithToast("/admin/students", `Row ${entry.row}: Team "${providedValue}" not found. Available teams: ${Array.from(teamNameToId.keys()).join(", ")}`, "error");
+        return;
+      }
+
+      const team = teams.find((t) => t.id === resolvedTeamId);
+      if (!team) {
+        revalidatePath("/admin/students");
+        redirectWithToast("/admin/students", `Row ${entry.row}: Team not found`, "error");
+        return;
+      }
+
+      // Generate or use provided chest number, normalized to uppercase
+      const chest_no = parsed.data.chest_no?.trim().toUpperCase() || generateNextChestNumber(team.name, existingStudents);
+
+      // Check for duplicate chest number in existing database
+      if (existingChestNumbers.has(chest_no)) {
+        const existingStudent = existingStudents.find((s) => s.chest_no.toUpperCase() === chest_no);
+        revalidatePath("/admin/students");
+        redirectWithToast("/admin/students", `Row ${entry.row}: Chest number "${chest_no}" already exists in database (assigned to "${existingStudent?.name || "unknown student"}").`, "error");
+        return;
+      }
+
+      // Check for duplicate chest number within this import batch
+      if (importBatchChestNumbers.has(chest_no)) {
+        revalidatePath("/admin/students");
+        redirectWithToast("/admin/students", `Row ${entry.row}: Chest number "${chest_no}" is duplicated within this CSV file. Each chest number must be unique.`, "error");
+        return;
+      }
+
+      // Add to batch tracking
+      importBatchChestNumbers.add(chest_no);
+
+      try {
+        await createStudent({
+          name: parsed.data.name,
+          team_id: resolvedTeamId,
+          chest_no,
+          category: parsed.data.category || (parsed.data.name.toLowerCase().includes("junior") ? "junior" : "senior"), // Fallback logic or default
+        });
+
+        // Add to existing set to prevent duplicates in subsequent rows of the same import
+        existingChestNumbers.add(chest_no);
+      } catch (error: any) {
+        // Provide user-friendly error message
+        if (error.message.includes("Chest number")) {
+          revalidatePath("/admin/students");
+          redirectWithToast("/admin/students", `Row ${entry.row}: ${error.message}`, "error");
+          return;
+        }
+        revalidatePath("/admin/students");
+        redirectWithToast("/admin/students", `Row ${entry.row}: Failed to create student - ${error.message}`, "error");
+        return;
+      }
     }
-  }
-  revalidatePath("/admin/students");
-  redirectWithToast("/admin/students", `Successfully imported ${importBatchChestNumbers.size} student(s)!`, "success");
+    revalidatePath("/admin/students");
+    redirectWithToast("/admin/students", `Successfully imported ${importBatchChestNumbers.size} student(s)!`, "success");
   } catch (error: any) {
     if (error?.digest === "NEXT_REDIRECT" || error?.message === "NEXT_REDIRECT") {
       throw error;
@@ -363,59 +375,66 @@ export default async function StudentsPage() {
   return (
     <div className="space-y-8">
       <div className="grid gap-6 lg:grid-cols-2">
-      <Card className="h-full">
-        <CardTitle>Add Student</CardTitle>
-        <CardDescription className="mt-2">
-          Maintain a searchable roster for quick result entry.
-        </CardDescription>
-        <form
-          action={createStudentAction}
-          className="mt-6 grid gap-4 md:grid-cols-2"
-        >
-          <Input name="name" placeholder="Student name" required />
-          <SearchSelect
-            name="team_id"
-            defaultValue={teams[0]?.id}
-            required
-            options={teams.map((team) => ({ value: team.id, label: team.name }))}
-            placeholder="Select team"
-          />
-          <Button type="submit" className="md:col-span-2">
-            Save Student
-          </Button>
-        </form>
-        <p className="mt-2 text-xs text-white/60">
-          Chest number will be auto-generated based on team name (e.g., {teams[0]?.name.slice(0, 2).toUpperCase()}001)
-        </p>
-      </Card>
-      <Card className="h-full">
-        <CardTitle>Bulk Import Students (CSV)</CardTitle>
-        <CardDescription className="mt-2">
-          Required columns: <code>name</code> and either <code>team_id</code> or <code>team_name</code>
-          <br />
-          <span className="text-xs text-white/50">
-            Chest numbers will be auto-generated. Team names: SAMARQAND, NAHAVAND, YAMAMA, QURTUBA, MUQADDAS, BUKHARA
-          </span>
-        </CardDescription>
-        <form
-          action={importStudentsAction}
-          className="mt-6 flex flex-col gap-4 md:flex-row md:items-end"
-        >
-          <div className="flex-1">
-            <label className="text-sm font-semibold text-white/70">
-              CSV File
-            </label>
-            <input
-              type="file"
-              name="file"
-              accept=".csv,text/csv"
+        <Card className="h-full">
+          <CardTitle>Add Student</CardTitle>
+          <CardDescription className="mt-2">
+            Maintain a searchable roster for quick result entry.
+          </CardDescription>
+          <form
+            action={createStudentAction}
+            className="mt-6 grid gap-4 md:grid-cols-2"
+          >
+            <Input name="name" placeholder="Student name" required />
+            <SearchSelect
+              name="team_id"
+              defaultValue={teams[0]?.id}
               required
-              className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white focus:border-fuchsia-400 focus:outline-none"
+              options={teams.map((team) => ({ value: team.id, label: team.name }))}
+              placeholder="Select team"
             />
-          </div>
-          <Button type="submit">Import CSV</Button>
-        </form>
-      </Card>
+            <div className="md:col-span-2">
+              <select name="category" required className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white focus:border-fuchsia-400 focus:outline-none">
+                <option value="" disabled selected className="bg-slate-900">Select Category</option>
+                <option value="junior" className="bg-slate-900">Junior</option>
+                <option value="senior" className="bg-slate-900">Senior</option>
+              </select>
+            </div>
+            <Button type="submit" className="md:col-span-2">
+              Save Student
+            </Button>
+          </form>
+          <p className="mt-2 text-xs text-white/60">
+            Chest number will be auto-generated based on team name (e.g., {teams[0]?.name.slice(0, 2).toUpperCase()}001)
+          </p>
+        </Card>
+        <Card className="h-full">
+          <CardTitle>Bulk Import Students (CSV)</CardTitle>
+          <CardDescription className="mt-2">
+            Required: <code>name</code>, <code>team_id/name</code>. Optional: <code>category</code> (junior/senior), <code>chest_no</code>.
+            <br />
+            <span className="text-xs text-white/50">
+              Chest numbers will be auto-generated. Team names: SAMARQAND, NAHAVAND, YAMAMA, QURTUBA, MUQADDAS, BUKHARA
+            </span>
+          </CardDescription>
+          <form
+            action={importStudentsAction}
+            className="mt-6 flex flex-col gap-4 md:flex-row md:items-end"
+          >
+            <div className="flex-1">
+              <label className="text-sm font-semibold text-white/70">
+                CSV File
+              </label>
+              <input
+                type="file"
+                name="file"
+                accept=".csv,text/csv"
+                required
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white focus:border-fuchsia-400 focus:outline-none"
+              />
+            </div>
+            <Button type="submit">Import CSV</Button>
+          </form>
+        </Card>
       </div>
 
       <StudentManager

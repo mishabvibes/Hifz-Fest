@@ -4,11 +4,11 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { 
-  Eye, 
-  Pencil, 
-  Trash2, 
-  X, 
+import {
+  Eye,
+  Pencil,
+  Trash2,
+  X,
   Check,
   User,
   Hash,
@@ -29,6 +29,7 @@ export function TeamStudentList({ students, updateAction, deleteAction, isRegist
   const [viewingId, setViewingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editChestNumber, setEditChestNumber] = useState("");
+  const [editCategory, setEditCategory] = useState<"junior" | "senior" | "">("");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter students based on search query
@@ -36,7 +37,7 @@ export function TeamStudentList({ students, updateAction, deleteAction, isRegist
     if (!searchQuery.trim()) {
       return students;
     }
-    
+
     const query = searchQuery.toLowerCase().trim();
     return students.filter((student) => {
       const nameMatch = student.name.toLowerCase().includes(query);
@@ -50,12 +51,14 @@ export function TeamStudentList({ students, updateAction, deleteAction, isRegist
     setEditingId(student.id);
     setEditName(student.name);
     setEditChestNumber(student.chestNumber);
+    setEditCategory(student.category || "");
   };
 
   const handleCancel = () => {
     setEditingId(null);
     setEditName("");
     setEditChestNumber("");
+    setEditCategory("");
   };
 
   const handleSave = async (studentId: string) => {
@@ -63,10 +66,12 @@ export function TeamStudentList({ students, updateAction, deleteAction, isRegist
     formData.append("studentId", studentId);
     formData.append("name", editName.trim());
     formData.append("chestNumber", editChestNumber.trim().toUpperCase());
+    if (editCategory) formData.append("category", editCategory);
     await updateAction(formData);
     setEditingId(null);
     setEditName("");
     setEditChestNumber("");
+    setEditCategory("");
   };
 
   const handleDelete = async (studentId: string) => {
@@ -133,159 +138,183 @@ export function TeamStudentList({ students, updateAction, deleteAction, isRegist
       ) : (
         <div className="space-y-3">
           {filteredStudents.map((student) => {
-        const isEditing = editingId === student.id;
-        const isViewing = viewingId === student.id;
+            const isEditing = editingId === student.id;
+            const isViewing = viewingId === student.id;
 
-        return (
-          <Card
-            key={student.id}
-            className="rounded-2xl group border border-white/10 bg-white/5 p-4 text-white transition-all hover:bg-white/10 hover:border-white/20"
-          >
-            {isEditing ? (
-              // Edit Mode
-              <div className="space-y-3">
-                {!isRegistrationOpen && (
-                  <div className="flex items-center gap-2 p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 mb-3">
-                    <Lock className="h-4 w-4 text-amber-400" />
-                    <p className="text-xs text-amber-300">Registration window is closed. Changes cannot be saved.</p>
-                  </div>
-                )}
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-white/70">Editing Student</h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleCancel}
-                    className="h-7 w-7 p-0"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <label className="text-xs text-white/60 mb-1.5 block">Student Name</label>
-                    <Input
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      placeholder="Student name"
-                      className="bg-white/10 border-white/20 text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-white/60 mb-1.5 block">Chest Number</label>
-                    <Input
-                      value={editChestNumber}
-                      onChange={(e) => setEditChestNumber(e.target.value.toUpperCase())}
-                      placeholder="Chest number"
-                      className="bg-white/10 border-white/20 text-white"
-                      maxLength={10}
-                    />
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => handleSave(student.id)}
-                    disabled={!isRegistrationOpen}
-                    className="flex-1"
-                    size="sm"
-                  >
-                    <Check className="h-4 w-4 mr-1.5" />
-                    Save Changes
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={handleCancel}
-                    size="sm"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              // View Mode
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4 flex-1 min-w-0">
-                  <div className="rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-500/20 p-2.5 shrink-0">
-                    <User className="h-5 w-5 text-cyan-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-white truncate">{student.name}</p>
-                    <div className="flex items-center gap-2 mt-1 text-sm text-white/60">
-                      <Hash className="h-3 w-3" />
-                      <span className="font-mono">{student.chestNumber}</span>
+            return (
+              <Card
+                key={student.id}
+                className="rounded-2xl group border border-white/10 bg-white/5 p-4 text-white transition-all hover:bg-white/10 hover:border-white/20"
+              >
+                {isEditing ? (
+                  // Edit Mode
+                  <div className="space-y-3">
+                    {!isRegistrationOpen && (
+                      <div className="flex items-center gap-2 p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 mb-3">
+                        <Lock className="h-4 w-4 text-amber-400" />
+                        <p className="text-xs text-amber-300">Registration window is closed. Changes cannot be saved.</p>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold text-white/70">Editing Student</h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleCancel}
+                        className="h-7 w-7 p-0"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="sm:col-span-2">
+                        <label className="text-xs text-white/60 mb-1.5 block">Student Name</label>
+                        <Input
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          placeholder="Student name"
+                          className="bg-white/10 border-white/20 text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-white/60 mb-1.5 block">Category</label>
+                        <select
+                          value={editCategory}
+                          onChange={(e) => setEditCategory(e.target.value as "junior" | "senior")}
+                          className="w-full bg-white/10 border border-white/20 text-white rounded-md px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <option value="" disabled className="bg-slate-900">Select Category</option>
+                          <option value="junior" className="bg-slate-900">Junior</option>
+                          <option value="senior" className="bg-slate-900">Senior</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-white/60 mb-1.5 block">Chest Number</label>
+                        <Input
+                          value={editChestNumber}
+                          onChange={(e) => setEditChestNumber(e.target.value.toUpperCase())}
+                          placeholder="Chest number"
+                          className="bg-white/10 border-white/20 text-white"
+                          maxLength={10}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleSave(student.id)}
+                        disabled={!isRegistrationOpen}
+                        className="flex-1"
+                        size="sm"
+                      >
+                        <Check className="h-4 w-4 mr-1.5" />
+                        Save Changes
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={handleCancel}
+                        size="sm"
+                      >
+                        Cancel
+                      </Button>
                     </div>
                   </div>
-                </div>
-                
-                {/* Action Buttons */}
-                <div className="flex items-center gap-2 shrink-0">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setViewingId(isViewing ? null : student.id)}
-                    className="h-9 w-9 p-0 hover:bg-cyan-500/20 hover:text-cyan-300"
-                    title="View details"
-                  >
-                    <Eye className={`h-4 w-4 ${isViewing ? 'text-cyan-400' : ''}`} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEdit(student)}
-                    disabled={!isRegistrationOpen}
-                    className="h-9 w-9 p-0 hover:bg-emerald-500/20 hover:text-emerald-300 disabled:opacity-40 disabled:cursor-not-allowed"
-                    title={isRegistrationOpen ? "Edit student" : "Registration window is closed"}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(student.id)}
-                    disabled={!isRegistrationOpen}
-                    className="h-9 w-9 p-0 hover:bg-red-500/20 hover:text-red-300 disabled:opacity-40 disabled:cursor-not-allowed"
-                    title={isRegistrationOpen ? "Delete student" : "Registration window is closed"}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
+                ) : (
+                  // View Mode
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <div className="rounded-full bg-linear-to-br from-cyan-500/20 to-blue-500/20 p-2.5 shrink-0">
+                        <User className="h-5 w-5 text-cyan-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-white truncate">{student.name}</p>
+                        <div className="flex items-center gap-2 mt-1 text-sm text-white/60">
+                          <Hash className="h-3 w-3" />
+                          <span className="font-mono">{student.chestNumber}</span>
+                        </div>
+                      </div>
+                      <div className="hidden sm:block">
+                        <span className={`text-xs px-2 py-1 rounded-full border ${student.category === 'junior'
+                          ? 'bg-blue-500/10 border-blue-500/20 text-blue-300'
+                          : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
+                          } uppercase tracking-wider font-medium`}>
+                          {student.category || 'N/A'}
+                        </span>
+                      </div>
+                    </div>
 
-            {/* View Details Panel */}
-            {isViewing && !isEditing && (
-              <div className="mt-4 pt-4 border-t border-white/10">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-xs text-white/60 mb-1">Student Name</p>
-                    <p className="font-medium text-white">{student.name}</p>
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setViewingId(isViewing ? null : student.id)}
+                        className="h-9 w-9 p-0 hover:bg-cyan-500/20 hover:text-cyan-300"
+                        title="View details"
+                      >
+                        <Eye className={`h-4 w-4 ${isViewing ? 'text-cyan-400' : ''}`} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(student)}
+                        disabled={!isRegistrationOpen}
+                        className="h-9 w-9 p-0 hover:bg-emerald-500/20 hover:text-emerald-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                        title={isRegistrationOpen ? "Edit student" : "Registration window is closed"}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(student.id)}
+                        disabled={!isRegistrationOpen}
+                        className="h-9 w-9 p-0 hover:bg-red-500/20 hover:text-red-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                        title={isRegistrationOpen ? "Delete student" : "Registration window is closed"}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-white/60 mb-1">Chest Number</p>
-                    <p className="font-mono font-medium text-white">{student.chestNumber}</p>
+                )}
+
+                {/* View Details Panel */}
+                {isViewing && !isEditing && (
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-xs text-white/60 mb-1">Student Name</p>
+                        <p className="font-medium text-white">{student.name}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-white/60 mb-1">Chest Number</p>
+                        <p className="font-mono font-medium text-white">{student.chestNumber}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-white/60 mb-1">Team</p>
+                        <p className="font-medium text-white">{student.teamName}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-white/60 mb-1">Total Points</p>
+                        <p className="font-medium text-white">{student.score || 0}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-white/60 mb-1">Category</p>
+                        <p className="font-medium text-white capitalize">{student.category || 'N/A'}</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setViewingId(null)}
+                      className="mt-4 w-full"
+                    >
+                      Close Details
+                    </Button>
                   </div>
-                  <div>
-                    <p className="text-xs text-white/60 mb-1">Team</p>
-                    <p className="font-medium text-white">{student.teamName}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/60 mb-1">Total Points</p>
-                    <p className="font-medium text-white">{student.score || 0}</p>
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setViewingId(null)}
-                  className="mt-4 w-full"
-                >
-                  Close Details
-                </Button>
-              </div>
-            )}
-          </Card>
-          );
-        })}
+                )}
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

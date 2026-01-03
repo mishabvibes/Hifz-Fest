@@ -52,6 +52,9 @@ function ProgramRegistrationCard({
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
 
+  // Determine program type
+  const isHifz = program.name.toLowerCase().includes("hifz");
+
   // Client-side participation limit check
   const checkStudentLimit = (studentId: string): {
     allowed: boolean;
@@ -59,8 +62,8 @@ function ProgramRegistrationCard({
     currentCount?: number;
     maxCount?: number;
   } => {
-    // General events have no limit
-    if (program.section === "general") {
+    // Hifz programs are exempt from limits
+    if (isHifz) {
       return { allowed: true };
     }
 
@@ -68,56 +71,51 @@ function ProgramRegistrationCard({
     const studentRegistrations = registrations.filter((reg) => reg.studentId === studentId);
     const programMap = new Map(allPrograms.map((p) => [p.id, p]));
 
-    if (program.section === "single") {
-      // Individual events: check based on stage (on-stage vs off-stage)
-      const sameStageRegistrations = studentRegistrations.filter((reg) => {
+    if (program.stage) {
+      // Stage Items Limit: 4
+      // Filter for existing non-Hifz stage items
+      const stageRegistrations = studentRegistrations.filter((reg) => {
         const regProgram = programMap.get(reg.programId);
-        return (
-          regProgram?.section === "single" &&
-          regProgram?.stage === program.stage &&
-          reg.programId !== program.id // Exclude current program if already registered
-        );
+        if (!regProgram) return false;
+        const isRegHifz = regProgram.name.toLowerCase().includes("hifz");
+        return regProgram.stage === true && !isRegHifz && reg.programId !== program.id;
       });
 
-      const maxCount = 3;
-      const currentCount = sameStageRegistrations.length;
-
-      if (currentCount >= maxCount) {
-        const stageType = program.stage ? "on-stage" : "off-stage";
-        return {
-          allowed: false,
-          reason: `Maximum limit of ${maxCount} individual ${stageType} events reached.`,
-          currentCount,
-          maxCount,
-        };
-      }
-
-      return { allowed: true, currentCount, maxCount };
-    }
-
-    if (program.section === "group") {
-      // Group events: maximum 3
-      const groupRegistrations = studentRegistrations.filter((reg) => {
-        const regProgram = programMap.get(reg.programId);
-        return regProgram?.section === "group" && reg.programId !== program.id;
-      });
-
-      const maxCount = 3;
-      const currentCount = groupRegistrations.length;
+      const maxCount = 4;
+      const currentCount = stageRegistrations.length;
 
       if (currentCount >= maxCount) {
         return {
           allowed: false,
-          reason: `Maximum limit of ${maxCount} group events reached.`,
+          reason: `Maximum limit of ${maxCount} stage items reached (excluding Hifz).`,
           currentCount,
           maxCount,
         };
       }
+      return { allowed: true, currentCount, maxCount };
+    } else {
+      // Off-Stage (General) Items Limit: 6
+      // Filter for existing non-Hifz off-stage items
+      const offStageRegistrations = studentRegistrations.filter((reg) => {
+        const regProgram = programMap.get(reg.programId);
+        if (!regProgram) return false;
+        const isRegHifz = regProgram.name.toLowerCase().includes("hifz");
+        return regProgram.stage === false && !isRegHifz && reg.programId !== program.id;
+      });
 
+      const maxCount = 6;
+      const currentCount = offStageRegistrations.length;
+
+      if (currentCount >= maxCount) {
+        return {
+          allowed: false,
+          reason: `Maximum limit of ${maxCount} off-stage items reached (excluding Hifz).`,
+          currentCount,
+          maxCount,
+        };
+      }
       return { allowed: true, currentCount, maxCount };
     }
-
-    return { allowed: true };
   };
 
   const handleStudentToggle = (studentId: string) => {
@@ -282,10 +280,10 @@ function ProgramRegistrationCard({
                         <label
                           key={student.id}
                           className={`flex items-center gap-3 rounded-xl border px-3 py-2 transition-colors ${isSelected
-                              ? "border-fuchsia-400 bg-fuchsia-400/10 cursor-pointer"
-                              : canSelect
-                                ? "border-white/10 bg-white/5 hover:bg-white/10 cursor-pointer"
-                                : "border-white/5 bg-white/5 opacity-50 cursor-not-allowed"
+                            ? "border-fuchsia-400 bg-fuchsia-400/10 cursor-pointer"
+                            : canSelect
+                              ? "border-white/10 bg-white/5 hover:bg-white/10 cursor-pointer"
+                              : "border-white/5 bg-white/5 opacity-50 cursor-not-allowed"
                             }`}
                         >
                           <input
@@ -304,7 +302,7 @@ function ProgramRegistrationCard({
                             )}
                             {limitCheck.allowed && limitCheck.currentCount !== undefined && (
                               <p className="text-xs text-white/50 mt-1">
-                                {limitCheck.currentCount} / {limitCheck.maxCount} {program.section === "single" ? (program.stage ? "on-stage" : "off-stage") : "group"} events
+                                {limitCheck.currentCount} / {limitCheck.maxCount} {program.stage ? "stage" : "off-stage"} items
                               </p>
                             )}
                           </div>
@@ -375,48 +373,12 @@ function ProgramRegistrationCard({
                 defaultValue=""
                 placeholder="Select a student"
                 options={availableStudents.map((student) => {
-                  // Check participation limit for single programs
-                  const limitCheck = (() => {
-                    if (program.section === "general") return { allowed: true };
-                    const studentRegistrations = registrations.filter((reg) => reg.studentId === student.id);
-                    const programMap = new Map(allPrograms.map((p) => [p.id, p]));
+                  // Check participation limit for all programs (now unified logic)
+                  const limitCheck = checkStudentLimit(student.id);
 
-                    if (program.section === "single") {
-                      const sameStageRegistrations = studentRegistrations.filter((reg) => {
-                        const regProgram = programMap.get(reg.programId);
-                        return (
-                          regProgram?.section === "single" &&
-                          regProgram?.stage === program.stage &&
-                          reg.programId !== program.id
-                        );
-                      });
-                      const maxCount = 3;
-                      return {
-                        allowed: sameStageRegistrations.length < maxCount,
-                        currentCount: sameStageRegistrations.length,
-                        maxCount,
-                      };
-                    }
-
-                    if (program.section === "group") {
-                      const groupRegistrations = studentRegistrations.filter((reg) => {
-                        const regProgram = programMap.get(reg.programId);
-                        return regProgram?.section === "group" && reg.programId !== program.id;
-                      });
-                      const maxCount = 3;
-                      return {
-                        allowed: groupRegistrations.length < maxCount,
-                        currentCount: groupRegistrations.length,
-                        maxCount,
-                      };
-                    }
-
-                    return { allowed: true };
-                  })();
-
-                  const stageType = program.section === "single" ? (program.stage ? "on-stage" : "off-stage") : program.section;
+                  const stageType = program.stage ? "stage" : "off-stage";
                   const limitText = limitCheck.allowed && limitCheck.currentCount !== undefined
-                    ? ` (${limitCheck.currentCount}/3 ${stageType})`
+                    ? ` (${limitCheck.currentCount}/${limitCheck.maxCount} ${stageType})`
                     : !limitCheck.allowed
                       ? ` - LIMIT REACHED`
                       : "";
@@ -487,7 +449,7 @@ export function TeamProgramRegister({
           (student) => !registrations.some((registration) => registration.studentId === student.id),
         );
         const limitReached = registrations.length >= program.candidateLimit;
-        const isGroupOrGeneral = program.section === "group" || program.section === "general";
+        const isGroupOrGeneral = program.type === "group" || program.section === "general";
         const remainingSlots = program.candidateLimit - registrations.length;
 
         return (

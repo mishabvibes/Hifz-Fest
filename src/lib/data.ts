@@ -477,34 +477,29 @@ const GRADE_BONUS: Record<Exclude<GradeType, "none">, number> = {
 };
 
 const GROUP_SCORES: Record<1 | 2 | 3, number> = {
-  1: 20,
-  2: 15,
-  3: 10,
+  1: 10,
+  2: 8,
+  3: 6,
 };
 
-const GENERAL_SCORES: Record<1 | 2 | 3, number> = {
-  1: 25,
-  2: 20,
-  3: 15,
-};
 
+// Update calculateScore to accept type instead of section
 export function calculateScore(
-  section: SectionType,
+  type: "single" | "group",
   position: 1 | 2 | 3,
   grade: GradeType = "none",
 ): number {
-  if (section === "single") {
-    // Default scores for single events (previously Category A)
-    const base = [0, 10, 7, 5][position] || 0;
+  if (type === "single") {
+    // Individual events: 5, 3, 1 + Grade Bonus
+    const base = [0, 5, 3, 1][position] || 0;
     const bonus = grade !== "none" ? GRADE_BONUS[grade] : 0;
     return base + bonus;
   }
 
-  if (section === "group") {
-    return GROUP_SCORES[position];
-  }
-
-  return GENERAL_SCORES[position];
+  // Group events: 10, 8, 6 + Grade Bonus
+  const base = GROUP_SCORES[position] || 0;
+  const bonus = grade !== "none" ? GRADE_BONUS[grade] : 0;
+  return base + bonus;
 }
 
 export async function updateLiveScore(teamId: string, delta: number) {
@@ -541,72 +536,18 @@ export async function resetLiveScores() {
 }
 
 const defaultTeams: Team[] = [
-  {
-    id: "team-cosmos",
-    name: "SAMARQAND",
-    leader: "Mira Lopes",
-    leader_photo: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39",
-    color: "#D72638",
-    description: "Fine arts and installations with a cosmic narrative.",
-    contact: "cosmos@artsfest.edu",
-    total_points: 0,
-    portal_password: "cosmos@123",
-  },
-  {
-    id: "team-dynamo",
-    name: "NAHAVAND",
-    leader: "Ritvik Sen",
-    leader_photo: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518",
-    color: "#1E3A8A",
-    description: "Theatre and stagecraft enthusiasts.",
-    contact: "dynamo@artsfest.edu",
-    total_points: 0,
-    portal_password: "dynamo@123",
-  },
-  {
-    id: "team-blaze",
-    name: "YAMAMA",
-    leader: "Kabir Varma",
-    leader_photo: "https://images.unsplash.com/photo-1504593811423-6dd665756598",
-    color: "#7C3AED",
-    description: "Dance collective known for explosive choreography.",
-    contact: "blaze@artsfest.edu",
-    total_points: 0,
-    portal_password: "blaze@123",
-  },
-  {
-    id: "team-ember",
-    name: "QURTUBA",
-    leader: "Salma Aziz & Ahmed Hassan",
-    leader_photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
-    color: "#FACC15",
-    description: "Literary arts champions with spoken word mastery.",
-    contact: "ember@artsfest.edu",
-    total_points: 0,
-    portal_password: "ember@123",
-  },
-  {
-    id: "team-aurora",
-    name: "MUQADDAS",
-    leader: "Anaya Joseph",
-    leader_photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
-    color: "#059669",
-    description: "Music & rhythm powerhouse representing the senior batch.",
-    contact: "aurora@artsfest.edu",
-    total_points: 0,
-    portal_password: "aurora@123",
-  },
-  {
-    id: "team-flux",
-    name: "BUKHARA",
-    leader: "Levi D'Souza",
-    leader_photo: "https://images.unsplash.com/photo-1546456073-92b9f0a8d1d6",
-    color: "#FB923C",
-    description: "Media & film crew pushing experimental visuals.",
-    contact: "flux@artsfest.edu",
-    total_points: 0,
-    portal_password: "flux@123",
-  },
+  // Legacy teams disabled for public registration system
+  // {
+  //   id: "team-cosmos",
+  //   name: "SAMARQAND",
+  //   leader: "Mira Lopes",
+  //   leader_photo: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39",
+  //   color: "#D72638",
+  //   description: "Fine arts and installations with a cosmic narrative.",
+  //   contact: "cosmos@artsfest.edu",
+  //   total_points: 0,
+  //   portal_password: "cosmos@123",
+  // },
 ];
 
 const defaultStudents: Student[] = [
@@ -672,7 +613,8 @@ const defaultPrograms: Program[] = [
   {
     id: "prog-solo-vocals",
     name: "Solo Vocals",
-    section: "single",
+    section: "senior",
+    type: "single",
     stage: true,
 
     candidateLimit: 2,
@@ -680,7 +622,8 @@ const defaultPrograms: Program[] = [
   {
     id: "prog-duet-dance",
     name: "Duet Dance",
-    section: "group",
+    section: "junior",
+    type: "group",
     stage: true,
 
     candidateLimit: 3,
@@ -688,7 +631,8 @@ const defaultPrograms: Program[] = [
   {
     id: "prog-live-paint",
     name: "Live Canvas Painting",
-    section: "single",
+    section: "general",
+    type: "single",
     stage: false,
 
     candidateLimit: 1,
@@ -696,7 +640,8 @@ const defaultPrograms: Program[] = [
   {
     id: "prog-shortfilm",
     name: "Short Film",
-    section: "group",
+    section: "senior",
+    type: "group",
     stage: false,
 
     candidateLimit: 4,
@@ -705,6 +650,7 @@ const defaultPrograms: Program[] = [
     id: "prog-quiz",
     name: "General Quiz",
     section: "general",
+    type: "group",
     stage: true,
 
     candidateLimit: 5,

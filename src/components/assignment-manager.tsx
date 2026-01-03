@@ -279,12 +279,12 @@ export const AssignmentManager = React.memo(function AssignmentManager({
                 <div key={juryId} className="overflow-hidden rounded-2xl border border-white/10 bg-slate-900/40 transition-all hover:border-white/20">
                   <div
                     onClick={() => toggleJuryExpansion(juryId)}
-                    className="flex cursor-pointer items-center justify-between p-5 hover:bg-white/[0.02]"
+                    className="flex cursor-pointer items-center justify-between p-5 hover:bg-white/2"
                   >
                     <div className="flex items-center gap-4">
                       <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border border-white/10 bg-slate-800">
                         {/* Avatar Fallback */}
-                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-fuchsia-600 to-purple-700 text-lg font-bold text-white">
+                        <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-fuchsia-600 to-purple-700 text-lg font-bold text-white">
                           {(jury?.name?.[0] || "J").toUpperCase()}
                         </div>
                       </div>
@@ -303,7 +303,7 @@ export const AssignmentManager = React.memo(function AssignmentManager({
                       {/* Mini Progress Bar */}
                       <div className="hidden h-1.5 w-24 overflow-hidden rounded-full bg-white/10 sm:block">
                         <div
-                          className="h-full bg-gradient-to-r from-fuchsia-500 to-emerald-400 transition-all duration-500"
+                          className="h-full bg-linear-to-r from-fuchsia-500 to-emerald-400 transition-all duration-500"
                           style={{ width: `${progress}%` }}
                         />
                       </div>
@@ -333,7 +333,7 @@ export const AssignmentManager = React.memo(function AssignmentManager({
                             return (
                               <div
                                 key={assignment.program_id}
-                                className="group relative flex flex-col justify-between rounded-2xl border border-white/5 bg-white/5 p-4 transition-all hover:border-white/10 hover:bg-white/[0.08]"
+                                className="group relative flex flex-col justify-between rounded-2xl border border-white/5 bg-white/5 p-4 transition-all hover:border-white/10 hover:bg-white/8"
                               >
                                 <div>
                                   <div className="mb-3 flex items-start justify-between">
@@ -354,11 +354,11 @@ export const AssignmentManager = React.memo(function AssignmentManager({
                                     {program?.name || "Unknown Program"}
                                   </h5>
                                   <div className="mt-2 flex flex-wrap gap-2 text-xs text-white/50">
-                                    <span className="rounded bg-white/5 px-1.5 py-0.5">
-                                      {program?.section === "single" ? "Solo" : "Group"}
+                                    <span className="rounded bg-white/5 px-1.5 py-0.5 capitalize">
+                                      {program?.type === "single" ? "Single" : "Group"}
                                     </span>
-                                    <span className="rounded bg-white/5 px-1.5 py-0.5">
-                                      Cat {program?.category}
+                                    <span className="rounded bg-white/5 px-1.5 py-0.5 capitalize">
+                                      {program?.section}
                                     </span>
                                     {program?.stage && (
                                       <span className="rounded bg-fuchsia-500/10 px-1.5 py-0.5 text-fuchsia-300">
@@ -413,7 +413,7 @@ export const AssignmentManager = React.memo(function AssignmentManager({
               return (
                 <div
                   key={`${assignment.program_id}-${assignment.jury_id}`}
-                  className="rounded-2xl border border-white/10 bg-white/5 p-4 hover:border-white/20 hover:bg-white/[0.08]"
+                  className="rounded-2xl border border-white/10 bg-white/5 p-4 hover:border-white/20 hover:bg-white/8"
                 >
                   <div className="flex items-center gap-3">
                     <div className="rounded-2xl bg-white/10 p-2">

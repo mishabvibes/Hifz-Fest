@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { 
-  Users, 
-  Calendar, 
-  Trophy, 
-  UserPlus, 
-  FileText, 
+import {
+  Users,
+  Calendar,
+  Trophy,
+  UserPlus,
+  FileText,
   ArrowRight,
   CheckCircle2,
   Clock,
@@ -17,8 +17,8 @@ import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getCurrentTeam } from "@/lib/auth";
-import { 
-  getPortalStudents, 
+import {
+  getPortalStudents,
   getProgramRegistrations,
   getProgramsWithLimits,
   isRegistrationOpen
@@ -36,29 +36,29 @@ export default async function TeamDashboardPage() {
     getProgramsWithLimits(),
     isRegistrationOpen(),
   ]);
-  
+
   const teamStudents = students.filter((student) => student.teamId === team.id);
   const teamRegistrations = registrations.filter((registration) => registration.teamId === team.id);
-  
+
   // Calculate statistics
   const uniquePrograms = new Set(teamRegistrations.map((r) => r.programId)).size;
   const totalPoints = teamStudents.reduce((sum, s) => sum + (s.score || 0), 0);
-  
+
   // Group registrations by section
   const programMap = new Map(programs.map((p) => [p.id, p]));
   const singleRegistrations = teamRegistrations.filter((r) => {
     const program = programMap.get(r.programId);
-    return program?.section === "single";
+    return program?.type === "single";
   });
   const groupRegistrations = teamRegistrations.filter((r) => {
     const program = programMap.get(r.programId);
-    return program?.section === "group";
+    return program?.type === "group" && program.section !== "general";
   });
   const generalRegistrations = teamRegistrations.filter((r) => {
     const program = programMap.get(r.programId);
     return program?.section === "general";
   });
-  
+
   // Get recent registrations (last 5)
   const recentRegistrations = teamRegistrations
     .slice()
@@ -111,7 +111,7 @@ export default async function TeamDashboardPage() {
       {/* Mobile View - Compact Card Layout */}
       <div className="lg:hidden space-y-4">
         {/* Mobile Header */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-800/90 via-slate-900/90 to-slate-800/90 p-5 backdrop-blur-sm">
+        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-linear-to-br from-slate-800/90 via-slate-900/90 to-slate-800/90 p-5 backdrop-blur-sm">
           <div className="relative z-10">
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1 min-w-0">
@@ -119,8 +119,8 @@ export default async function TeamDashboardPage() {
                 <h1 className="text-2xl font-bold text-white truncate">{team.teamName}</h1>
                 <p className="text-sm text-white/70 mt-1 truncate">{team.leaderName}</p>
               </div>
-              <Badge 
-                tone={isOpen ? "emerald" : "pink"} 
+              <Badge
+                tone={isOpen ? "emerald" : "pink"}
                 className="shrink-0 text-xs px-3 py-1"
               >
                 {isOpen ? (
@@ -136,7 +136,7 @@ export default async function TeamDashboardPage() {
                 )}
               </Badge>
             </div>
-            
+
             {/* Mobile Quick Stats */}
             <div className="grid grid-cols-2 gap-3 mt-4">
               <div className="rounded-2xl bg-white/5 border border-white/10 p-3">
@@ -159,7 +159,7 @@ export default async function TeamDashboardPage() {
               <Link key={stat.label} href={stat.link}>
                 <Card className="group relative overflow-hidden border-white/10 bg-white/5 p-4 transition-all duration-200 hover:bg-white/10 hover:border-white/20 active:scale-[0.98]">
                   <div className="flex flex-col items-start gap-3">
-                    <div className={`rounded-lg bg-gradient-to-br ${stat.color} p-2.5`}>
+                    <div className={`rounded-lg bg-linear-to-br ${stat.color} p-2.5`}>
                       <Icon className="h-4 w-4 text-white" />
                     </div>
                     <div className="w-full">
@@ -268,10 +268,10 @@ export default async function TeamDashboardPage() {
                           {program?.name || "Unknown"}
                         </p>
                       </div>
-                      <Badge 
+                      <Badge
                         tone={
-                          program?.section === "single" ? "pink" :
-                          program?.section === "group" ? "emerald" : "amber"
+                          program?.type === "single" ? "pink" :
+                            program?.section === "general" ? "amber" : "emerald"
                         }
                         className="text-xs shrink-0"
                       >
@@ -289,8 +289,8 @@ export default async function TeamDashboardPage() {
       {/* Desktop View - Professional Layout */}
       <div className="hidden lg:block space-y-6">
         {/* Desktop Header */}
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-slate-800/90 via-slate-900/90 to-slate-800/90 p-8 backdrop-blur-sm">
-          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-fuchsia-500/10 to-emerald-500/10 opacity-50" />
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-linear-to-br from-slate-800/90 via-slate-900/90 to-slate-800/90 p-8 backdrop-blur-sm">
+          <div className="absolute inset-0 bg-linear-to-br from-cyan-500/10 via-fuchsia-500/10 to-emerald-500/10 opacity-50" />
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -298,8 +298,8 @@ export default async function TeamDashboardPage() {
                 <h1 className="text-4xl font-bold text-white mb-2">{team.teamName}</h1>
                 <p className="text-base text-white/70">Led by {team.leaderName}</p>
               </div>
-              <Badge 
-                tone={isOpen ? "emerald" : "pink"} 
+              <Badge
+                tone={isOpen ? "emerald" : "pink"}
                 className="text-sm px-5 py-2.5"
               >
                 {isOpen ? (
@@ -330,7 +330,7 @@ export default async function TeamDashboardPage() {
                       <p className="text-sm font-medium text-white/70 mb-2">{stat.label}</p>
                       <p className="text-3xl font-bold text-white">{stat.value}</p>
                     </div>
-                    <div className={`rounded-2xl bg-gradient-to-br ${stat.color} p-3 shadow-lg`}>
+                    <div className={`rounded-2xl bg-linear-to-br ${stat.color} p-3 shadow-lg`}>
                       <Icon className="h-6 w-6 text-white" />
                     </div>
                   </div>
@@ -355,7 +355,7 @@ export default async function TeamDashboardPage() {
               </div>
               <div>
                 <Link href="/team/register-students" className="block mb-4">
-                  <Card className="group border border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 p-4 transition-all hover:scale-[1.02] hover:shadow-lg cursor-pointer">
+                  <Card className="group border border-cyan-500/30 bg-linear-to-br from-cyan-500/10 to-blue-500/10 p-4 transition-all hover:scale-[1.02] hover:shadow-lg cursor-pointer">
                     <div className="flex items-center gap-4">
                       <div className="rounded-xl bg-cyan-500/20 p-3">
                         <UserPlus className="h-5 w-5 text-cyan-400" />
@@ -369,7 +369,7 @@ export default async function TeamDashboardPage() {
                   </Card>
                 </Link>
                 <Link href="/team/program-register" className="block">
-                  <Card className="group border border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-500/10 to-pink-500/10 p-4 transition-all hover:scale-[1.02] hover:shadow-lg cursor-pointer">
+                  <Card className="group border border-fuchsia-500/30 bg-linear-to-br from-fuchsia-500/10 to-pink-500/10 p-4 transition-all hover:scale-[1.02] hover:shadow-lg cursor-pointer">
                     <div className="flex items-center gap-4">
                       <div className="rounded-xl bg-fuchsia-500/20 p-3">
                         <Calendar className="h-5 w-5 text-fuchsia-400" />
@@ -437,7 +437,7 @@ export default async function TeamDashboardPage() {
                   </Button>
                 </Link>
               </div>
-              
+
               {recentRegistrations.length > 0 ? (
                 <div className="space-y-3">
                   {recentRegistrations.map((registration) => {
@@ -448,7 +448,7 @@ export default async function TeamDashboardPage() {
                         className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4 transition-colors hover:bg-white/10"
                       >
                         <div className="flex items-center gap-4 flex-1 min-w-0">
-                          <div className={`rounded-lg bg-gradient-to-br ${stats.find(s => s.label === "Registrations")?.color || "from-fuchsia-500 to-pink-600"} p-2.5 shrink-0`}>
+                          <div className={`rounded-lg bg-linear-to-br ${stats.find(s => s.label === "Registrations")?.color || "from-fuchsia-500 to-pink-600"} p-2.5 shrink-0`}>
                             <Users className="h-4 w-4 text-white" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -460,10 +460,10 @@ export default async function TeamDashboardPage() {
                             </div>
                           </div>
                         </div>
-                        <Badge 
+                        <Badge
                           tone={
-                            program?.section === "single" ? "pink" :
-                            program?.section === "group" ? "emerald" : "amber"
+                            program?.type === "single" ? "pink" :
+                              program?.section === "general" ? "amber" : "emerald"
                           }
                           className="shrink-0"
                         >

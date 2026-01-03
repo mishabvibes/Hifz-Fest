@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { TeamStudentList } from "@/components/team-student-list";
 import { ChestNumberPreview } from "@/components/chest-number-preview";
 import { getCurrentTeam } from "@/lib/auth";
+import { Select } from "@/components/ui/select";
 import {
   deletePortalStudent,
   getPortalStudents,
@@ -46,16 +47,20 @@ async function createStudentAction(formData: FormData) {
   "use server";
   const team = await getCurrentTeam();
   if (!team) redirect("/team/login");
-  
+
   const isOpen = await isRegistrationOpen();
   if (!isOpen) {
     redirectWithMessage("Registration window is closed. You cannot add students at this time.");
   }
 
   const name = String(formData.get("name") ?? "").trim();
-  
+  const category = String(formData.get("category") ?? "") as "junior" | "senior";
+
   if (!name) {
     redirectWithMessage("Student name is required.");
+  }
+  if (!category || (category !== "junior" && category !== "senior")) {
+    redirectWithMessage("Valid category (Junior/Senior) is required.");
   }
 
   const students = await getPortalStudents();
@@ -77,6 +82,7 @@ async function createStudentAction(formData: FormData) {
       name,
       chestNumber,
       teamId: team.id,
+      category,
     });
   } catch (error) {
     redirectWithMessage((error as Error).message);
@@ -89,16 +95,22 @@ async function updateStudentAction(formData: FormData) {
   "use server";
   const team = await getCurrentTeam();
   if (!team) redirect("/team/login");
-  
+
   const isOpen = await isRegistrationOpen();
   if (!isOpen) {
     redirectWithMessage("Registration window is closed. You cannot edit students at this time.");
   }
-  
+
   const studentId = String(formData.get("studentId") ?? "");
   const name = String(formData.get("name") ?? "").trim();
+  const category = String(formData.get("category") ?? "") as "junior" | "senior";
   const chestNumber = String(formData.get("chestNumber") ?? "").trim().toUpperCase();
+
   if (!studentId) redirectWithMessage("Missing student ID.");
+  if (!name) redirectWithMessage("Student name is required.");
+  if (!category || (category !== "junior" && category !== "senior")) {
+    redirectWithMessage("Valid category (Junior/Senior) is required.");
+  }
 
   const students = await getPortalStudents();
   const current = students.find((student) => student.id === studentId);
@@ -114,6 +126,7 @@ async function updateStudentAction(formData: FormData) {
       name,
       chestNumber,
       teamId: team.id,
+      category,
     });
   } catch (error) {
     redirectWithMessage((error as Error).message);
@@ -126,12 +139,12 @@ async function deleteStudentAction(formData: FormData) {
   "use server";
   const team = await getCurrentTeam();
   if (!team) redirect("/team/login");
-  
+
   const isOpen = await isRegistrationOpen();
   if (!isOpen) {
     redirectWithMessage("Registration window is closed. You cannot delete students at this time.");
   }
-  
+
   const studentId = String(formData.get("studentId") ?? "");
   const students = await getPortalStudents();
   const current = students.find((student) => student.id === studentId);
@@ -214,12 +227,17 @@ export default async function RegisterStudentsPage({
           <>
             <ChestNumberPreview teamName={team.teamName} teamStudents={teamStudents} />
             <form action={createStudentAction} className="mt-4 grid gap-3 sm:gap-4 sm:grid-cols-[1fr_auto]">
-              <Input 
-                name="name" 
-                placeholder="Enter student name" 
-                required 
+              <Input
+                name="name"
+                placeholder="Enter student name"
+                required
                 className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
               />
+              <select name="category" required className="w-[180px] bg-white/10 border-white/20 text-white rounded-md px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                <option value="" disabled selected className="bg-slate-900">Select Category</option>
+                <option value="junior" className="bg-slate-900">Junior</option>
+                <option value="senior" className="bg-slate-900">Senior</option>
+              </select>
               <Button type="submit" className="w-full sm:w-auto">
                 Add Student
               </Button>

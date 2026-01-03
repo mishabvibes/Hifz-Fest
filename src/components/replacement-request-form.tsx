@@ -66,37 +66,51 @@ export function ReplacementRequestForm({
       }
 
       // 2. Check Participation Limits
+
+      // Determine program type
+      const isHifz = selectedProgram.name.toLowerCase().includes("hifz");
+
+      // Hifz programs are exempt from limits
       let isEligible = true;
       let ineligibilityReason = "";
 
-      // Logic derived from validateParticipationLimit in team-data.ts
-      if (selectedProgram.section === "single") {
-        // Check limits for Single (Individual) events
-        // Filter registrations for this student that are ALSO single and share the same stage type (on-stage vs off-stage)
-        const sameTypeCount = teamRegistrations.filter(r => {
-          if (r.studentId !== student.id) return false;
-          // Must look up program details for this registration
-          const regProgram = allPrograms.find(p => p.id === r.programId);
-          if (!regProgram) return false;
+      if (!isHifz) {
+        // Create map for lookups
+        const programMap = new Map(allPrograms.map(p => [p.id, p]));
+        const studentRegistrations = teamRegistrations.filter(reg => reg.studentId === student.id);
 
-          return regProgram.section === "single" && regProgram.stage === selectedProgram.stage;
-        }).length;
+        if (selectedProgram.stage) {
+          // Stage Items Limit: 4
+          const stageRegistrations = studentRegistrations.filter(reg => {
+            const regProgram = programMap.get(reg.programId);
+            if (!regProgram) return false;
+            // Count existing non-Hifz stage registrations
+            // Note: Excluding 'reg.programId !== programId' is WRONG here because we are checking if adding THIS program would exceed limits.
+            // BUT, validation checks existing registrations. 
+            // If student has 4 items, and this is the 5th, he isn't eligible. 
+            // So we check existing count.
+            const isRegHifz = regProgram.name.toLowerCase().includes("hifz");
+            return regProgram.stage === true && !isRegHifz;
+          });
 
-        if (sameTypeCount >= 3) {
-          isEligible = false;
-          ineligibilityReason = `Max 3 ${selectedProgram.stage ? "On-Stage" : "Off-Stage"} items reached`;
-        }
-      } else if (selectedProgram.section === "group") {
-        // Check limits for Group events
-        const groupCount = teamRegistrations.filter(r => {
-          if (r.studentId !== student.id) return false;
-          const regProgram = allPrograms.find(p => p.id === r.programId);
-          return regProgram && regProgram.section === "group";
-        }).length;
+          if (stageRegistrations.length >= 4) {
+            isEligible = false;
+            ineligibilityReason = "Max 4 stage items reached";
+          }
+        } else {
+          // Off-Stage Items Limit: 6
+          const offStageRegistrations = studentRegistrations.filter(reg => {
+            const regProgram = programMap.get(reg.programId);
+            if (!regProgram) return false;
+            // Count existing non-Hifz off-stage registrations
+            const isRegHifz = regProgram.name.toLowerCase().includes("hifz");
+            return regProgram.stage === false && !isRegHifz;
+          });
 
-        if (groupCount >= 3) { // Assuming global group limit of 3
-          isEligible = false;
-          ineligibilityReason = "Max 3 Group items reached";
+          if (offStageRegistrations.length >= 6) {
+            isEligible = false;
+            ineligibilityReason = "Max 6 off-stage items reached";
+          }
         }
       }
 

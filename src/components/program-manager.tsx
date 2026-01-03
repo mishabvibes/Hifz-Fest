@@ -26,9 +26,10 @@ type SortOption = "latest" | "az";
 
 const sectionOptions = [
   { label: "All Sections", value: "" },
-  { label: "Single", value: "single" },
-  { label: "Group", value: "group" },
+  { label: "Junior", value: "junior" },
+  { label: "Senior", value: "senior" },
   { label: "General", value: "general" },
+  { label: "Hifz", value: "hifz" },
 ];
 
 const stageOptions = [
@@ -270,8 +271,8 @@ export const ProgramManager = React.memo(function ProgramManager({
               type="button"
               onClick={() => handleSortChange(option.value as SortOption)}
               className={`rounded-full px-4 py-1 text-xs font-semibold transition ${sort === option.value
-                  ? "bg-emerald-500/20 text-emerald-300"
-                  : "border border-white/10 text-white/60 hover:text-white"
+                ? "bg-emerald-500/20 text-emerald-300"
+                : "border border-white/10 text-white/60 hover:text-white"
                 }`}
             >
               {option.label}
@@ -338,13 +339,17 @@ export const ProgramManager = React.memo(function ProgramManager({
                     {program.section}
                   </span>
 
+                  <span className="rounded-full border border-white/15 px-3 py-1 capitalize">
+                    {program.type}
+                  </span>
+
                   <span className="rounded-full border border-white/15 px-3 py-1">
                     {program.stage ? "On stage" : "Off stage"}
                   </span>
                   <span
                     className={`rounded-full border px-3 py-1 ${registrationCount >= candidateLimit
-                        ? "border-amber-400 text-amber-200"
-                        : "border-emerald-400/40 text-emerald-200"
+                      ? "border-amber-400 text-amber-200"
+                      : "border-emerald-400/40 text-emerald-200"
                       }`}
                   >
                     Registered {registrationCount} / {candidateLimit}
@@ -391,11 +396,22 @@ export const ProgramManager = React.memo(function ProgramManager({
                     name="section"
                     defaultValue={program.section}
                     options={[
-                      { value: "single", label: "Single" },
-                      { value: "group", label: "Group" },
+                      { value: "junior", label: "Junior" },
+                      { value: "senior", label: "Senior" },
                       { value: "general", label: "General" },
+                      { value: "hifz", label: "Hifz" },
                     ]}
                     placeholder="Select section"
+                  />
+
+                  <SearchSelect
+                    name="type"
+                    defaultValue={program.type ?? "single"}
+                    options={[
+                      { value: "single", label: "Single" },
+                      { value: "group", label: "Group" },
+                    ]}
+                    placeholder="Select type"
                   />
 
                   <SearchSelect
@@ -489,6 +505,10 @@ export const ProgramManager = React.memo(function ProgramManager({
             </p>
             <p>
               <span className="text-white/50">Section:</span> {viewProgram.section}
+            </p>
+
+            <p>
+              <span className="text-white/50">Type:</span> {viewProgram.type}
             </p>
 
             <p>

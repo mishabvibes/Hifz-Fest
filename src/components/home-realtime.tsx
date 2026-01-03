@@ -65,9 +65,9 @@ export function HomeRealtime({ teams: initialTeams, liveScores: initialLiveScore
           </div> */}
 
           {/* Ship - Center */}
-          <div className="relative w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-[300px] lg:h-[300px] mb-2">
+          <div className="relative w-48 h-48 mb-8 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-[300px] lg:h-[300px]">
             <Image
-              src="/img/assets/ship.webp"
+              src="/img/hero/Fest-logo.webp"
               alt="Ship"
               fill
               className="object-contain"
@@ -78,7 +78,7 @@ export function HomeRealtime({ teams: initialTeams, liveScores: initialLiveScore
           {/* Main Title - Charutha Font */}
           <div>
             <h1 className="text-[#A13A24] text-4xl sm:text-5xl md:text-6xl lg:text-7xl mb-2 font-['Charutha'] tracking-wide leading-5 md:leading-7">
-              FUNOON FIESTA '25-26
+              HIFZ FIESTA '25-26
             </h1>
 
             {/* Subtitle - Bricolage Font */}
@@ -197,9 +197,8 @@ export function HomeRealtime({ teams: initialTeams, liveScores: initialLiveScore
       <HomeEngagementSection />
 
       {/* Team Leaders Section */}
-      <section className="bg-white py-12 sm:py-16 md:py-20 relative overflow-hidden">
+      {/* <section className="bg-white py-12 sm:py-16 md:py-20 relative overflow-hidden">
 
-        {/* Decorative Sun - Top Left */}
         <div className="absolute top-10 left-0 -translate-x-1/2 -translate-y-1/4 w-32 h-32 md:w-64 md:h-64 opacity-20 animate-[sun-rotate_60s_linear_infinite] pointer-events-none z-20">
           <Image
             src="/img/assets/sun.webp"
@@ -209,7 +208,6 @@ export function HomeRealtime({ teams: initialTeams, liveScores: initialLiveScore
           />
         </div>
 
-        {/* Decorative Srang - Bottom Right */}
         <div className="absolute bottom-0 right-0 w-40 h-40 md:w-96 md:h-96 opacity-90 translate-y-1/6 translate-x-1/6 pointer-events-none z-20">
           <Image
             src="/img/assets/srang.png"
@@ -222,7 +220,7 @@ export function HomeRealtime({ teams: initialTeams, liveScores: initialLiveScore
         <div className="container mx-auto max-w-7xl px-4 sm:px-5 md:px-8 relative z-10">
           <TeamLeadersShowcase teams={initialTeams} />
         </div>
-      </section>
+      </section> */}
 
       {/* About Funoon Fiesta Section */}
       <AboutSection />

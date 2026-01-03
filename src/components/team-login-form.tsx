@@ -36,6 +36,12 @@ export function TeamLoginForm({
         <Input name="password" type="password" placeholder="Password" required />
         {state.error && <p className="text-sm text-red-400">{state.error}</p>}
         <SubmitButton />
+        <p className="text-center text-sm text-white/50 pt-2">
+          New here?{" "}
+          <a href="/team/register" className="text-fuchsia-400 hover:text-fuchsia-300 font-medium hover:underline">
+            Register your Institute
+          </a>
+        </p>
       </form>
     </Card>
   );

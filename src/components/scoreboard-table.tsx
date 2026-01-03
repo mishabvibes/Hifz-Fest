@@ -205,9 +205,10 @@ export function ScoreboardTable({
   const teamNames = teams.map((t) => t.name);
   const studentMap = new Map(students.map((s) => [s.id, s]));
 
-  // Organize programs by section
-  const singlePrograms = programs.filter((p) => p.section === "single");
-  const groupPrograms = programs.filter((p) => p.section === "group");
+  // Organize programs by type/section
+  // Use .type instead of .section for single/group distinction
+  const singlePrograms = programs.filter((p) => p.type === "single");
+  const groupPrograms = programs.filter((p) => p.type === "group" && p.section !== "general");
   const generalPrograms = programs.filter((p) => p.section === "general");
 
   const getTotalPointsForTeam = (teamId: string): number => {

@@ -156,11 +156,12 @@ export const StudentManager = React.memo(function StudentManager({
   const viewStudent = viewStudentId ? students.find((student) => student.id === viewStudentId) : null;
 
   const exportToCSV = () => {
-    const headers = ["Name", "Chest Number", "Team", "Total Points"];
+    const headers = ["Name", "Chest Number", "Team", "Category", "Total Points"];
     const rows = sortedStudents.map((student) => [
       student.name,
       student.chest_no,
       teamMap.get(student.team_id) ?? "Unknown",
+      student.category || "",
       student.total_points.toString(),
     ]);
 
@@ -205,8 +206,8 @@ export const StudentManager = React.memo(function StudentManager({
 
       yPos += 4;
 
-      const headers = ["Name", "Chest Number", "Team", "Total Points"];
-      const colWidths = [60, 40, 50, 30];
+      const headers = ["Name", "Chest Number", "Team", "Category", "Total Points"];
+      const colWidths = [50, 30, 40, 30, 30];
       const startX = 14;
 
       doc.setFontSize(10);
@@ -232,6 +233,7 @@ export const StudentManager = React.memo(function StudentManager({
           student.name,
           student.chest_no,
           teamMap.get(student.team_id) ?? "Unknown",
+          student.category || "",
           student.total_points.toString(),
         ];
 
@@ -373,8 +375,8 @@ export const StudentManager = React.memo(function StudentManager({
               type="button"
               onClick={() => setSort(option.value as SortOption)}
               className={`rounded-full px-4 py-1 text-xs font-semibold transition ${sort === option.value
-                  ? "bg-emerald-500/20 text-emerald-300"
-                  : "border border-white/10 text-white/60 hover:text-white"
+                ? "bg-emerald-500/20 text-emerald-300"
+                : "border border-white/10 text-white/60 hover:text-white"
                 }`}
             >
               {option.label}
@@ -428,6 +430,9 @@ export const StudentManager = React.memo(function StudentManager({
                     {teamMap.get(student.team_id) ?? "Unknown team"}
                   </span>
                   <span className="rounded-full border border-white/15 px-3 py-1">Chest #{student.chest_no}</span>
+                  <span className={`rounded-full border border-white/15 px-3 py-1 uppercase font-bold tracking-wider ${student.category === 'junior' ? 'text-blue-300 border-blue-500/30' : 'text-emerald-300 border-emerald-500/30'}`}>
+                    {student.category || 'N/A'}
+                  </span>
                 </div>
                 <div className="flex flex-wrap gap-2 w-full xl:ml-auto xl:w-auto xl:justify-end">
                   <Button
@@ -476,6 +481,18 @@ export const StudentManager = React.memo(function StudentManager({
                     options={teams.map((team) => ({ value: team.id, label: team.name }))}
                     placeholder="Select team"
                   />
+                  <div className="md:col-span-3">
+                    <select
+                      name="category"
+                      defaultValue={student.category}
+                      required
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white focus:border-fuchsia-400 focus:outline-none"
+                    >
+                      <option value="" disabled className="bg-slate-900">Select Category</option>
+                      <option value="junior" className="bg-slate-900">Junior</option>
+                      <option value="senior" className="bg-slate-900">Senior</option>
+                    </select>
+                  </div>
                   <div className="flex items-center gap-3 md:col-span-3">
                     <Button type="submit" className="flex-1">
                       Save changes
@@ -556,6 +573,9 @@ export const StudentManager = React.memo(function StudentManager({
             </p>
             <p>
               <span className="text-white/50">Chest number:</span> {viewStudent.chest_no}
+            </p>
+            <p>
+              <span className="text-white/50">Category:</span> <span className="capitalize">{viewStudent.category}</span>
             </p>
           </div>
         )}

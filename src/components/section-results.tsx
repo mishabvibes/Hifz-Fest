@@ -34,7 +34,7 @@ export function SectionResults({ programs, results, programMap, students, teams 
                 case "non-stage":
                     return program.stage === false;
                 case "group":
-                    return program.section === "group";
+                    return program.type === "group";
                 case "general":
                     return program.section === "general";
                 default:

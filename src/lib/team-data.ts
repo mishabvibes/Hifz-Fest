@@ -91,6 +91,7 @@ export async function getPortalStudents(): Promise<PortalStudent[]> {
     teamId: student.team_id,
     teamName: teamMap.get(student.team_id) ?? "Unknown",
     score: student.total_points ?? 0,
+    category: student.category,
   }));
 }
 
@@ -99,6 +100,7 @@ export async function upsertPortalStudent(input: {
   name: string;
   chestNumber: string;
   teamId: string;
+  category: "junior" | "senior";
 }) {
   await connectDB();
   const chestNumber = input.chestNumber.trim().toUpperCase();
@@ -122,7 +124,9 @@ export async function upsertPortalStudent(input: {
         $set: {
           name: input.name,
           chest_no: chestNumber,
+          chest_no: chestNumber,
           team_id: input.teamId,
+          category: input.category,
         },
         $setOnInsert: { total_points: 0 },
       },
@@ -272,8 +276,9 @@ export function validateParticipationLimit(
   allPrograms: Program[],
   registrations: ProgramRegistration[],
 ): { allowed: boolean; reason?: string; currentCount?: number; maxCount?: number } {
-  // General events have no limit
-  if (program.section === "general") {
+  // Determine program type
+  // Hifz programs are exempt from limits
+  if (program.section === "hifz") {
     return { allowed: true };
   }
 
@@ -283,56 +288,49 @@ export function validateParticipationLimit(
   // Create a map of programId -> Program for quick lookup
   const programMap = new Map(allPrograms.map((p) => [p.id, p]));
 
-  if (program.section === "single") {
-    // Individual events: check based on stage (on-stage vs off-stage)
-    const sameStageRegistrations = studentRegistrations.filter((reg) => {
+  if (program.stage) {
+    // Stage Items Limit: 4
+    // Filter for existing non-Hifz stage items
+    const stageRegistrations = studentRegistrations.filter((reg) => {
       const regProgram = programMap.get(reg.programId);
-      return (
-        regProgram?.section === "single" &&
-        regProgram?.stage === program.stage &&
-        reg.programId !== program.id // Exclude current program if already registered
-      );
+      if (!regProgram) return false;
+      return regProgram.stage === true && regProgram.section !== "hifz" && reg.programId !== program.id;
     });
 
-    const maxCount = 3;
-    const currentCount = sameStageRegistrations.length;
-
-    if (currentCount >= maxCount) {
-      const stageType = program.stage ? "on-stage" : "off-stage";
-      return {
-        allowed: false,
-        reason: `Maximum limit of ${maxCount} individual ${stageType} events reached.`,
-        currentCount,
-        maxCount,
-      };
-    }
-
-    return { allowed: true, currentCount, maxCount };
-  }
-
-  if (program.section === "group") {
-    // Group events: maximum 3
-    const groupRegistrations = studentRegistrations.filter((reg) => {
-      const regProgram = programMap.get(reg.programId);
-      return regProgram?.section === "group" && reg.programId !== program.id;
-    });
-
-    const maxCount = 3;
-    const currentCount = groupRegistrations.length;
+    const maxCount = 4;
+    const currentCount = stageRegistrations.length;
 
     if (currentCount >= maxCount) {
       return {
         allowed: false,
-        reason: `Maximum limit of ${maxCount} group events reached.`,
+        reason: `Maximum limit of ${maxCount} stage items reached (excluding Hifz).`,
         currentCount,
         maxCount,
       };
     }
+    return { allowed: true, currentCount, maxCount };
+  } else {
+    // Off-Stage (General) Items Limit: 6
+    // Filter for existing non-Hifz off-stage items
+    const offStageRegistrations = studentRegistrations.filter((reg) => {
+      const regProgram = programMap.get(reg.programId);
+      if (!regProgram) return false;
+      return regProgram.stage === false && regProgram.section !== "hifz" && reg.programId !== program.id;
+    });
 
+    const maxCount = 6;
+    const currentCount = offStageRegistrations.length;
+
+    if (currentCount >= maxCount) {
+      return {
+        allowed: false,
+        reason: `Maximum limit of ${maxCount} off-stage items reached (excluding Hifz).`,
+        currentCount,
+        maxCount,
+      };
+    }
     return { allowed: true, currentCount, maxCount };
   }
-
-  return { allowed: true };
 }
 
 export async function getReplacementRequests(teamId?: string): Promise<ReplacementRequest[]> {

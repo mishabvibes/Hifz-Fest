@@ -12,7 +12,7 @@ export async function ensureRegisteredCandidates(programId: string, winnerIds: s
     throw new Error("No registered candidates for this program.");
   }
   const allowedIds =
-    program.section === "single"
+    program.type === "single"
       ? new Set(programRegistrations.map((registration) => registration.studentId))
       : new Set(programRegistrations.map((registration) => registration.teamId));
   for (const winnerId of winnerIds) {

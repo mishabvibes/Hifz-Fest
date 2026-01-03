@@ -38,10 +38,10 @@ function sanitizeGrade(grade: string | undefined): "A" | "B" | "C" | "none" {
 }
 
 async function buildEntries(
-  program: { id: string; section: string },
+  program: { id: string; section: string; type: "single" | "group" },
   winners: WinnerPayload[],
 ) {
-  if (program.section === "single") {
+  if (program.type === "single") {
     const ids = winners.map((winner) => winner.id);
     const students = await StudentModel.find({ id: { $in: ids } }).lean();
     const studentMap = new Map(students.map((student) => [student.id, student]));
@@ -57,7 +57,7 @@ async function buildEntries(
         team_id: student.team_id,
         grade,
         score: calculateScore(
-          program.section as "single",
+          "single",
           winner.position,
           grade,
         ),
@@ -78,7 +78,7 @@ async function buildEntries(
       team_id: team.id,
       grade: "none" as const,
       score: calculateScore(
-        program.section as "group" | "general",
+        "group",
         winner.position,
         "none",
       ),

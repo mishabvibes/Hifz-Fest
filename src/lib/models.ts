@@ -58,6 +58,13 @@ const TeamSchema = new Schema<Team>(
     contact: { type: String, required: true },
     total_points: { type: Number, default: 0 },
     portal_password: { type: String, default: "" },
+    // New Registration Fields
+    place: { type: String },
+    district: { type: String },
+    whatsapp_number: { type: String },
+    union_official_number: { type: String },
+    principal_name: { type: String },
+    principal_phone: { type: String },
   },
   { timestamps: true },
 );
@@ -71,6 +78,7 @@ const StudentSchema = new Schema<Student>(
     avatar: { type: String },
     total_points: { type: Number, default: 0 },
     phone_number: { type: String },
+    category: { type: String, enum: ["junior", "senior"] },
   },
   { timestamps: true },
 );
@@ -81,7 +89,12 @@ const ProgramSchema = new Schema<Program>(
   {
     id: { type: String, required: true, unique: true },
     name: { type: String, required: true },
-    section: { type: String, enum: ["single", "group", "general"], required: true },
+    section: {
+      type: String,
+      enum: ["junior", "senior", "general", "hifz"],
+      required: true,
+    },
+    type: { type: String, enum: ["single", "group"], required: true },
     stage: { type: Boolean, default: true },
 
     candidateLimit: { type: Number, default: 1 },

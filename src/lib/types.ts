@@ -1,4 +1,4 @@
-export type SectionType = "single" | "group" | "general";
+export type SectionType = "junior" | "senior" | "general" | "hifz";
 
 export type GradeType = "A" | "B" | "C" | "none";
 
@@ -12,6 +12,14 @@ export interface Team {
   contact: string;
   total_points: number;
   portal_password?: string;
+
+  // New Registration Fields
+  place?: string;
+  district?: string;
+  whatsapp_number?: string;
+  union_official_number?: string;
+  principal_name?: string;
+  principal_phone?: string;
 }
 
 export interface Student {
@@ -22,6 +30,7 @@ export interface Student {
   avatar?: string;
   total_points: number;
   phone_number?: string; // Added for Festory verification
+  category?: "junior" | "senior";
 }
 
 // ... existing types ...
@@ -33,6 +42,7 @@ export interface Program {
   id: string;
   name: string;
   section: SectionType;
+  type: "single" | "group";
   stage: boolean;
 
   candidateLimit?: number;
@@ -98,6 +108,7 @@ export interface PortalStudent {
   teamId: string;
   teamName: string;
   score: number;
+  category?: "junior" | "senior";
 }
 
 export interface RegistrationSchedule {
