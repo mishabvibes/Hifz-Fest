@@ -18,56 +18,10 @@ import {
 } from "recharts";
 import { Button } from "@/components/ui/button";
 
-interface LiveScorePulseProps {
-  teams: Team[];
-  liveScores: Map<string, number>;
+// Helper to lighten/darken hex color
+function adjustColor(color: string, amount: number) {
+  return '#' + color.replace(/^#/, '').replace(/../g, color => ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
 }
-
-// Enhanced Team Colors - More Saturated & Vibrant
-const TEAM_COLORS: Record<string, { primary: string; gradient: string; light: string; stroke: string; glow: string }> = {
-  SAMARQAND: {
-    primary: "#E11D48",
-    gradient: "from-rose-600 to-rose-500",
-    light: "#FFE4E6",
-    stroke: "#9F1239",
-    glow: "shadow-rose-500/20",
-  },
-  NAHAVAND: {
-    primary: "#2563EB",
-    gradient: "from-blue-600 to-blue-500",
-    light: "#DBEAFE",
-    stroke: "#1E40AF",
-    glow: "shadow-blue-500/20",
-  },
-  YAMAMA: {
-    primary: "#7C3AED",
-    gradient: "from-violet-600 to-violet-500",
-    light: "#EDE9FE",
-    stroke: "#5B21B6",
-    glow: "shadow-violet-500/20",
-  },
-  QURTUBA: {
-    primary: "#D97706",
-    gradient: "from-amber-500 to-amber-400",
-    light: "#FEF3C7",
-    stroke: "#B45309",
-    glow: "shadow-amber-500/20",
-  },
-  MUQADDAS: {
-    primary: "#059669",
-    gradient: "from-emerald-600 to-emerald-500",
-    light: "#D1FAE5",
-    stroke: "#065F46",
-    glow: "shadow-emerald-500/20",
-  },
-  BUKHARA: {
-    primary: "#EA580C",
-    gradient: "from-orange-600 to-orange-500",
-    light: "#FFEDD5",
-    stroke: "#9A3412",
-    glow: "shadow-orange-500/20",
-  },
-};
 
 function getMedalColor(rank: number): string {
   switch (rank) {
@@ -78,8 +32,22 @@ function getMedalColor(rank: number): string {
   }
 }
 
+interface LiveScorePulseProps {
+  teams: Team[];
+  liveScores: Map<string, number>;
+}
+
 interface TeamCardProps {
-  team: Team & { totalPoints: number; colors: typeof TEAM_COLORS[string] };
+  team: Team & {
+    totalPoints: number;
+    colors: {
+      primary: string;
+      gradient: string;
+      light: string;
+      stroke: string;
+      glow: string;
+    }
+  };
   index: number;
   rank: number;
   maxPoints: number;
@@ -99,18 +67,28 @@ function TeamCard({ team, index, rank, maxPoints }: TeamCardProps) {
       className="relative group"
     >
       <div
-        className={`relative overflow-hidden bg-white border border-gray-100 rounded-3xl p-5 transition-all duration-300 ${team.colors.glow} hover:shadow-2xl shadow-xl z-0`}
+        className="relative overflow-hidden bg-white border border-gray-100 rounded-3xl p-5 transition-all duration-300 hover:shadow-2xl shadow-xl z-0"
+        style={{ boxShadow: team.colors.glow }}
       >
         {/* Dynamic Gradient Border/Glow effect */}
-        <div className={`absolute top-0 left-0 w-1.5 h-full bg-linear-to-b ${team.colors.gradient}`} />
+        <div
+          className="absolute top-0 left-0 w-1.5 h-full"
+          style={{ background: `linear-gradient(to bottom, ${team.colors.primary}, ${team.colors.stroke})` }}
+        />
 
         {/* Hover Gradient Background */}
-        <div className={`absolute inset-0 bg-linear-to-br ${team.colors.gradient} opacity-0 group-hover:opacity-[0.03] transition-opacity duration-300 pointer-events-none`} />
+        <div
+          className="absolute inset-0 opacity-0 group-hover:opacity-[0.03] transition-opacity duration-300 pointer-events-none"
+          style={{ background: team.colors.gradient }}
+        />
 
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-4">
             {/* Rank Badge */}
-            <div className={`flex flex-col items-center justify-center w-12 h-12 rounded-2xl bg-linear-to-br ${team.colors.gradient} text-white font-bold shadow-lg`}>
+            <div
+              className="flex flex-col items-center justify-center w-12 h-12 rounded-2xl text-white font-bold shadow-lg"
+              style={{ background: team.colors.gradient }}
+            >
               <span className="text-lg leading-none">#{rank}</span>
             </div>
 
@@ -160,7 +138,8 @@ function TeamCard({ team, index, rank, maxPoints }: TeamCardProps) {
               whileInView={{ width: `${percentage}%` }}
               viewport={{ once: true }}
               transition={{ duration: 1, ease: "circOut" }}
-              className={`h-full rounded-full bg-linear-to-r ${team.colors.gradient} relative overflow-hidden`}
+              className="h-full rounded-full relative overflow-hidden"
+              style={{ background: `linear-gradient(to right, ${team.colors.primary}, ${team.colors.stroke})` }}
             >
               <div className="absolute inset-0 bg-white/20 animate-[shimmer_2s_infinite]" />
             </motion.div>
@@ -267,12 +246,21 @@ function AnalyticsSection({ teams }: { teams: any[] }) {
 export function LiveScorePulse({ teams, liveScores }: LiveScorePulseProps) {
   const teamsWithScores = teams.map((team) => {
     const totalPoints = liveScores.get(team.id) ?? team.total_points;
-    const colors = TEAM_COLORS[team.name] || {
-      primary: "#6B7280",
-      gradient: "from-gray-500 to-gray-600",
-      light: "#F9FAFB",
-      stroke: "#4B5563",
-      glow: "shadow-gray-500/20",
+    // Use team.color or default to gray
+    const primary = (team.color && team.color.startsWith('#')) ? team.color : "#6B7280";
+
+    // Generate derived colors dynamically
+    const stroke = adjustColor(primary, -30);
+
+    const colors = {
+      primary,
+      // Create a gradient string for inline styles
+      gradient: `linear-gradient(to bottom right, ${primary}, ${stroke})`,
+      // Light version for backgrounds (using hex alpha)
+      light: `${primary}1A`,
+      stroke,
+      // Glow shadow
+      glow: `0 10px 15px -3px ${primary}33`
     };
     return { ...team, totalPoints, colors };
   });
