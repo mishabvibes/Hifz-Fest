@@ -295,7 +295,7 @@ function ProgramRegistrationCard({
                           <div className="flex-1">
                             <p className="font-medium text-white">{student.name}</p>
                             <p className="text-xs text-white/60">
-                              Chest #{student.chestNumber} · {student.teamName}
+                              Chest #{student.chestNumber} · {student.category ? student.category.charAt(0).toUpperCase() + student.category.slice(1) : ""}
                             </p>
                             {!limitCheck.allowed && (
                               <p className="text-xs text-amber-400 mt-1">{limitCheck.reason}</p>
@@ -385,7 +385,7 @@ function ProgramRegistrationCard({
 
                   return {
                     value: student.id,
-                    label: `${student.name} · ${student.chestNumber} · ${student.teamName}${limitText}`,
+                    label: `${student.name} · ${student.chestNumber} · ${student.category ? student.category.charAt(0).toUpperCase() + student.category.slice(1) : ""}${limitText}`,
                     meta: !limitCheck.allowed ? "Limit reached" : undefined,
                   };
                 })}
@@ -446,7 +446,18 @@ export function TeamProgramRegister({
           (registration) => registration.programId === program.id,
         );
         const availableStudents = teamStudents.filter(
-          (student) => !registrations.some((registration) => registration.studentId === student.id),
+          (student) => {
+            const isRegistered = registrations.some((registration) => registration.studentId === student.id);
+            if (isRegistered) return false;
+
+            // Strict Category Filtering
+            // If program is Junior, ONLY show Junior students
+            if (program.section === "junior" && student.category !== "junior") return false;
+            // If program is Senior, ONLY show Senior students
+            if (program.section === "senior" && student.category !== "senior") return false;
+
+            return true;
+          }
         );
         const limitReached = registrations.length >= program.candidateLimit;
         const isGroupOrGeneral = program.type === "group" || program.section === "general";

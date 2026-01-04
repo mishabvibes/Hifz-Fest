@@ -99,6 +99,11 @@ export interface PortalTeam {
   password: string;
   leaderName: string;
   themeColor?: string;
+  place?: string;
+  district?: string;
+  whatsapp_number?: string;
+  principal_name?: string;
+  principal_phone?: string;
 }
 
 export interface PortalStudent {

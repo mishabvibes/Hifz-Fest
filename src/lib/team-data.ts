@@ -32,6 +32,11 @@ export async function getPortalTeams(): Promise<PortalTeam[]> {
     password: "", // SECURITY: Do not leak password
     leaderName: team.leader,
     themeColor: sanitizeColor(team.color),
+    place: team.place,
+    district: team.district,
+    whatsapp_number: team.whatsapp_number,
+    principal_name: team.principal_name,
+    principal_phone: team.principal_phone,
   }));
 }
 

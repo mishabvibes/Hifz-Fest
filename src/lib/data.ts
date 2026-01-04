@@ -551,120 +551,17 @@ const defaultTeams: Team[] = [
 ];
 
 const defaultStudents: Student[] = [
-  {
-    id: "stu-aurora-1",
-    name: "Neha Dominic",
-    team_id: "team-aurora",
-    chest_no: "A101",
-    avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1",
-    total_points: 0,
-  },
-  {
-    id: "stu-aurora-2",
-    name: "Arjun Prakash",
-    team_id: "team-aurora",
-    chest_no: "A102",
-    avatar: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df",
-    total_points: 0,
-  },
-  {
-    id: "stu-blaze-1",
-    name: "Sana Mathew",
-    team_id: "team-blaze",
-    chest_no: "B201",
-    avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1",
-    total_points: 0,
-  },
-  {
-    id: "stu-cosmos-1",
-    name: "Joel Francis",
-    team_id: "team-cosmos",
-    chest_no: "C301",
-    avatar: "https://images.unsplash.com/photo-1504593811423-6dd665756598",
-    total_points: 0,
-  },
-  {
-    id: "stu-dynamo-1",
-    name: "Veda Krish",
-    team_id: "team-dynamo",
-    chest_no: "D401",
-    avatar: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39",
-    total_points: 0,
-  },
-  {
-    id: "stu-ember-1",
-    name: "Kiran Nair",
-    team_id: "team-ember",
-    chest_no: "E501",
-    avatar: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518",
-    total_points: 0,
-  },
-  {
-    id: "stu-flux-1",
-    name: "Maya Iqbal",
-    team_id: "team-flux",
-    chest_no: "F601",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
-    total_points: 0,
-  },
+  
 ];
 
 const defaultPrograms: Program[] = [
-  {
-    id: "prog-solo-vocals",
-    name: "Solo Vocals",
-    section: "senior",
-    type: "single",
-    stage: true,
-
-    candidateLimit: 2,
-  },
-  {
-    id: "prog-duet-dance",
-    name: "Duet Dance",
-    section: "junior",
-    type: "group",
-    stage: true,
-
-    candidateLimit: 3,
-  },
-  {
-    id: "prog-live-paint",
-    name: "Live Canvas Painting",
-    section: "general",
-    type: "single",
-    stage: false,
-
-    candidateLimit: 1,
-  },
-  {
-    id: "prog-shortfilm",
-    name: "Short Film",
-    section: "senior",
-    type: "group",
-    stage: false,
-
-    candidateLimit: 4,
-  },
-  {
-    id: "prog-quiz",
-    name: "General Quiz",
-    section: "general",
-    type: "group",
-    stage: true,
-
-    candidateLimit: 5,
-  },
+  
 ];
 
 const defaultAssignments: AssignedProgram[] = [
-  { program_id: "prog-solo-vocals", jury_id: "jury-anika", status: "pending" },
-  { program_id: "prog-duet-dance", jury_id: "jury-dev", status: "pending" },
-  { program_id: "prog-live-paint", jury_id: "jury-sahana", status: "pending" },
+  
 ];
 
 const defaultJury: Jury[] = [
-  { id: "jury-anika", name: "Anika Raman", password: "anika@jury", avatar: "/img/jury.webp" },
-  { id: "jury-dev", name: "Dev Jain", password: "dev@jury", avatar: "/img/jury1.webp" },
-  { id: "jury-sahana", name: "Sahana Biju", password: "sahana@jury", avatar: "/img/jury2.webp" },
+ 
 ];

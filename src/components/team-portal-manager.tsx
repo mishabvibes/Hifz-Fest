@@ -673,6 +673,25 @@ export const TeamPortalManager = React.memo(function TeamPortalManager({
                 <p className="text-sm text-white">{viewingTeam.themeColor || "#0ea5e9"}</p>
               </div>
             </div>
+            {(viewingTeam.place || viewingTeam.district || viewingTeam.whatsapp_number) && (
+              <div>
+                <p className="text-xs text-white/50">Institute Details</p>
+                <div className="mt-1 space-y-1">
+                  {viewingTeam.place && <p className="text-sm text-white">Place: {viewingTeam.place}</p>}
+                  {viewingTeam.district && <p className="text-sm text-white">District: {viewingTeam.district}</p>}
+                  {viewingTeam.whatsapp_number && <p className="text-sm text-white">WhatsApp: {viewingTeam.whatsapp_number}</p>}
+                </div>
+              </div>
+            )}
+            {(viewingTeam.principal_name || viewingTeam.principal_phone) && (
+              <div>
+                <p className="text-xs text-white/50">Principal Information</p>
+                <div className="mt-1 space-y-1">
+                  {viewingTeam.principal_name && <p className="text-sm text-white">Name: {viewingTeam.principal_name}</p>}
+                  {viewingTeam.principal_phone && <p className="text-sm text-white">Phone: {viewingTeam.principal_phone}</p>}
+                </div>
+              </div>
+            )}
             {(() => {
               const stats = getTeamStats(viewingTeam.id);
               const teamStudents = students.filter((s) => s.teamId === viewingTeam.id);
@@ -744,7 +763,7 @@ export const TeamPortalManager = React.memo(function TeamPortalManager({
             </form>
           </div>
         )}
-      </Modal>
+      </Modal >
     </>
   );
 });
