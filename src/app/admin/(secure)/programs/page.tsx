@@ -273,7 +273,7 @@ function parseCsv(content: string) {
   const headers = headerLine
     .split(",")
     .map((header) => header.trim().toLowerCase());
-  const requiredHeaders = ["name", "section", "stage", "candidate_limit"];
+  const requiredHeaders = ["name", "section", "type", "stage", "candidate_limit"];
   for (const column of requiredHeaders) {
     if (!headers.includes(column)) {
       throw new Error(`Missing "${column}" column in CSV header.`);
