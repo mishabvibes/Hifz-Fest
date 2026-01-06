@@ -10,6 +10,8 @@ import { RealtimeProvider } from "@/components/realtime-provider";
 import { PublicPageWrapper } from "@/components/public-page-wrapper";
 import { JsonLd } from "@/components/json-ld";
 
+import CursorAnimation from "@/components/cursor-animation";
+
 export const metadata: Metadata = {
   title: {
     default: "Hifz Fest - Showcasing Islamic Art & Culture",
@@ -114,6 +116,7 @@ export default function RootLayout({
       >
 
         <RealtimeProvider>
+          <CursorAnimation />
           <OfflineIndicator />
           <ToastProvider>
             <PublicPageWrapper>

@@ -110,80 +110,16 @@ export function HomeRealtime({ teams: initialTeams, liveScores: initialLiveScore
           </div>
         </div>
 
-        {/* Desktop Waves - Responsive Width */}
-        <div className="hidden md:block absolute bottom-0 left-0 w-full h-[220px] lg:h-[260px] z-30 pointer-events-none overflow-hidden">
-          <svg className="absolute bottom-0 left-0 w-[200%] h-full" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 2880 320">
-            {/* Wave 3 (Back) - Period 720px (4 cycles) */}
-            <path
-              fill="#0891b2"
-              fillOpacity="1"
-              d="M0,230 
-                 C240,180 480,280 720,230 
-                 C960,180 1200,280 1440,230 
-                 C1680,180 1920,280 2160,230 
-                 C2400,180 2640,280 2880,230 
-                 V320 H0 Z"
-              className="animate-[wave-slide_20s_linear_infinite]"
-              style={{ transformBox: 'fill-box' }}
-            />
-            {/* Wave 2 (Middle) - Period 480px (6 cycles) */}
-            <path
-              fill="#0e7490"
-              fillOpacity="1"
-              d="M0,260 
-                 C160,220 320,300 480,260 
-                 C640,220 800,300 960,260 
-                 C1120,220 1280,300 1440,260 
-                 C1600,220 1760,300 1920,260 
-                 C2080,220 2240,300 2400,260 
-                 C2560,220 2720,300 2880,260 
-                 V320 H0 Z"
-              className="animate-[wave-slide_15s_linear_infinite]"
-              style={{ animationDirection: 'reverse' }}
-            />
-            {/* Wave 1 (Front) - Period 720px (4 cycles), Offset Phase */}
-            <path
-              fill="#155e75"
-              fillOpacity="1"
-              d="M0,290 
-                 C240,340 480,240 720,290 
-                 C960,340 1200,240 1440,290 
-                 C1680,340 1920,240 2160,290 
-                 C2400,340 2640,240 2880,290 
-                 V320 H0 Z"
-              className="animate-[wave-slide_12s_linear_infinite]"
-            />
-          </svg>
-        </div>
-
-        {/* Mobile Waves - Fixed Width & Taller */}
-        <div className="md:hidden absolute bottom-0 left-0 w-full h-[320px] z-30 pointer-events-none overflow-hidden">
-          <svg className="absolute bottom-0 left-0 w-[2880px] h-full" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 2880 320">
-            {/* Wave 3 (Back) */}
-            <path
-              fill="#0891b2"
-              fillOpacity="1"
-              d="M0,230 C240,180 480,280 720,230 C960,180 1200,280 1440,230 C1680,180 1920,280 2160,230 C2400,180 2640,280 2880,230 V320 H0 Z"
-              className="animate-[wave-slide_20s_linear_infinite]"
-              style={{ transformBox: 'fill-box' }}
-            />
-            {/* Wave 2 (Middle) */}
-            <path
-              fill="#0e7490"
-              fillOpacity="1"
-              d="M0,260 C160,220 320,300 480,260 C640,220 800,300 960,260 C1120,220 1280,300 1440,260 C1600,220 1760,300 1920,260 C2080,220 2240,300 2400,260 C2560,220 2720,300 2880,260 V320 H0 Z"
-              className="animate-[wave-slide_15s_linear_infinite]"
-              style={{ animationDirection: 'reverse' }}
-            />
-            {/* Wave 1 (Front) */}
-            <path
-              fill="#155e75"
-              fillOpacity="1"
-              d="M0,290 C240,340 480,240 720,290 C960,340 1200,240 1440,290 C1680,340 1920,240 2160,290 C2400,340 2640,240 2880,290 V320 H0 Z"
-              className="animate-[wave-slide_12s_linear_infinite]"
-            />
-          </svg>
-        </div>
+        {/* Pattern Static */}
+        <div
+          className="absolute bottom-0 left-0 w-full h-[70px] sm:h-[80px] md:h-[100px] z-30"
+          style={{
+            backgroundImage: "url('/img/hero/pattern.webp')",
+            backgroundRepeat: "repeat-x",
+            backgroundSize: "auto 100%",
+            backgroundPosition: "bottom center"
+          }}
+        />
       </section>
 
       {/* Live Score Pulse Section */}
