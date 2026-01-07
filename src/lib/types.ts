@@ -268,3 +268,19 @@ export interface FestoryUser {
   image?: string;
   profileImageUpdateCount?: number;
 }
+
+export interface StudentRegistry {
+  id: string; // Mongoose ID
+  uid: string; // The HQxxxx ID
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InstituteRegistry {
+  id: string;
+  name: string;
+  shortName?: string;
+  createdAt: string;
+  updatedAt: string;
+}

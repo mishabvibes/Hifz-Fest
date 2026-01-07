@@ -27,6 +27,8 @@ const adminNav: SidebarItem[] = [
       { href: "/admin/team-portal-control", label: "Control Panel" },
       { href: "/admin/team-details", label: "Team Details" },
       { href: "/admin/request-approvals", label: "Request Approvals" },
+      { href: "/admin/student-registry", label: "Student Registry" },
+      { href: "/admin/institute-registry", label: "Institute Registry" },
     ],
   },
   { href: "/admin/point-calculator", label: "Point PC", icon: "calculator" },

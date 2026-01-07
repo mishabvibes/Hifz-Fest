@@ -20,6 +20,8 @@ import type {
   FestoryPost,
   FestoryUser,
   FestoryComment,
+  StudentRegistry,
+  InstituteRegistry,
 } from "./types";
 
 // Force new schema in dev
@@ -45,6 +47,8 @@ if (process.env.NODE_ENV !== "production") {
   delete models.FestoryPost;
   delete models.FestoryComment;
   delete models.FestoryUser;
+  delete models.StudentRegistry;
+  delete models.InstituteRegistry;
 }
 
 const TeamSchema = new Schema<Team>(
@@ -456,4 +460,28 @@ export const FestoryCommentModel =
 export const FestoryUserModel =
   (models.FestoryUser as Model<FestoryUser>) ??
   model<FestoryUser>("FestoryUser", FestoryUserSchema);
+
+const StudentRegistrySchema = new Schema<StudentRegistry>(
+  {
+    uid: { type: String, required: true, unique: true },
+    name: { type: String, required: true },
+  },
+  { timestamps: true },
+);
+
+export const StudentRegistryModel =
+  (models.StudentRegistry as Model<StudentRegistry>) ??
+  model<StudentRegistry>("StudentRegistry", StudentRegistrySchema);
+
+const InstituteRegistrySchema = new Schema<InstituteRegistry>(
+  {
+    name: { type: String, required: true, unique: true },
+    shortName: { type: String },
+  },
+  { timestamps: true },
+);
+
+export const InstituteRegistryModel =
+  (models.InstituteRegistry as Model<InstituteRegistry>) ??
+  model<InstituteRegistry>("InstituteRegistry", InstituteRegistrySchema);
 

@@ -12,6 +12,11 @@ import { AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { InstituteRegistry } from "@/lib/types";
+
+interface RegisterTeamFormProps {
+    institutes: InstituteRegistry[];
+}
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -34,7 +39,7 @@ const initialState = {
     fieldErrors: {} as Record<string, string[] | undefined>,
 };
 
-export function RegisterTeamForm() {
+export function RegisterTeamForm({ institutes }: RegisterTeamFormProps) {
     const [state, formAction] = useActionState(registerTeam, initialState);
 
     return (
@@ -71,19 +76,10 @@ export function RegisterTeamForm() {
                                     <SearchSelect
                                         name="name"
                                         placeholder="Select College..."
-                                        options={[
-                                            { label: "Shihab Thangal Thahfeezul Quran College", value: "Kannyala College" },
-                                            { label: "Sayyid Muhammedali Shihab Thangal Thahfeezul Quran College", value: "Pazamallur College" },
-                                            { label: "Hafiz Mammu Molla College Of Thahfeezul Quran", value: "Puthanpalli" },
-                                            { label: "Panakkad Shihab Thangal & Shamsul Ulama Memorial Hifzul Quran College", value: "Kottakkunnu College" },
-                                            { label: "Darul Azhar Islamic Academy", value: "Koduvalli College" },
-                                            { label: "Darul Quran Islamic Academy", value: "Purang College" },
-                                            { label: "Darussalam Thahfeezul Quran College", value: "Indianoor College" },
-                                            { label: "Muhammediyya Hifzul Quran College", value: "Kunil College" },
-                                            { label: "KMO Hifz College", value: "Karulayi College" },
-                                            { label: "Thahfeezul Quran College", value: "Perinthalmanna College" },
-                                            { label: "Siddeeqiyya Hifzul Quran College", value: "Anakkayam College" },
-                                        ]}
+                                        options={institutes.map(inst => ({
+                                            label: inst.name,
+                                            value: inst.name // Keeping full name as value as per userActions logic
+                                        }))}
                                         className="w-full"
                                         required
                                     />

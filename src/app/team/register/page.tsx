@@ -1,7 +1,9 @@
 import { RegisterTeamForm } from "@/components/forms/register-team-form";
-import Image from "next/image";
+import { getInstituteRegistry } from "@/actions/institute-registry";
 
-export default function RegisterTeamPage() {
+export default async function RegisterTeamPage() {
+    const institutes = await getInstituteRegistry();
+
     return (
         <main className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden bg-slate-950">
 
@@ -26,7 +28,7 @@ export default function RegisterTeamPage() {
                     </p>
                 </div>
 
-                <RegisterTeamForm />
+                <RegisterTeamForm institutes={institutes} />
             </div>
 
         </main>
