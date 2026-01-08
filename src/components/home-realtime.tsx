@@ -95,7 +95,7 @@ export function HomeRealtime({ teams: initialTeams, liveScores: initialLiveScore
           {/* CTA Buttons */}
           <div className="relative z-50 flex flex-col sm:flex-row gap-4 items-center">
             <Link href="/team/register">
-              <div className="bg-[#F2C04D] hover:bg-[#dbb13d] text-black font-medium text-lg px-8 py-3 rounded-full shadow-lg transition-transform hover:scale-105 flex items-center gap-3 active:scale-95">
+              <div className="bg-[#F2C04D] hover:bg-[#dbb13d] text-black font-medium text-sm md:text-lg px-8 py-3 rounded-full shadow-lg transition-transform hover:scale-105 flex items-center gap-3 active:scale-95">
                 Register Here
                 <ArrowRight className="w-5 h-5" />
               </div>
