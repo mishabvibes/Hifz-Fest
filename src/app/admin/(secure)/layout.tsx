@@ -15,8 +15,8 @@ const adminNav: SidebarItem[] = [
   { href: "/admin/add-result", label: "Add Result", icon: "addResult" },
   { href: "/admin/pending-results", label: "Pending Results", icon: "pending" },
   { href: "/admin/approved-results", label: "Approved Results", icon: "approved" },
-  { href: "/admin/polls", label: "Polls", icon: "polls" },
-  { href: "/admin/predictions", label: "Predictions", icon: "predictions" },
+
+  { href: "/admin/gallery", label: "Gallery", icon: "gallery" },
   { href: "/admin/festory", label: "Festory", icon: "festory" },
 
   {

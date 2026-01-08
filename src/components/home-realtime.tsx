@@ -7,19 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Music2, ArrowRight } from "lucide-react"; // Added Music2, ArrowRight
 import { LiveScorePulse } from "@/components/live-score-pulse";
 import { TeamLeadersShowcase } from "@/components/team-leaders-showcase";
-import { HomeEngagementSection } from "@/components/HomeEngagementSection";
+import { HomeGallerySection } from "@/components/home-gallery-section";
 import { AboutSection } from "@/components/AboutSection";
 
 import { useScoreboardUpdates } from "@/hooks/use-realtime";
 import { useRouter } from "next/navigation";
-import type { Team } from "@/lib/types";
+import type { Team, GalleryImage } from "@/lib/types";
 
 interface HomeRealtimeProps {
   teams: Team[];
   liveScores: Map<string, number>;
+  galleryImages: GalleryImage[];
 }
 
-export function HomeRealtime({ teams: initialTeams, liveScores: initialLiveScores }: HomeRealtimeProps) {
+export function HomeRealtime({ teams: initialTeams, liveScores: initialLiveScores, galleryImages }: HomeRealtimeProps) {
   const router = useRouter();
 
   useScoreboardUpdates(() => {
@@ -128,7 +129,10 @@ export function HomeRealtime({ teams: initialTeams, liveScores: initialLiveScore
       </section>
 
       {/* Engagement Section */}
-      <HomeEngagementSection />
+      {/* <HomeEngagementSection /> */}
+
+      {/* Gallery Section */}
+      <HomeGallerySection initialImages={galleryImages} />
 
       {/* Team Leaders Section */}
       {/* <section className="bg-white py-12 sm:py-16 md:py-20 relative overflow-hidden">
