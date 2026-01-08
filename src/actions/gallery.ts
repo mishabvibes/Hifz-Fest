@@ -66,6 +66,35 @@ export async function deleteGalleryImage(id: string) {
     }
 }
 
+export async function deleteBulkGalleryImages(ids: string[]) {
+    try {
+        await connectDB();
+
+        // Find all images to be deleted
+        const images = await GalleryModel.find({ id: { $in: ids } });
+
+        if (images.length === 0) {
+            return { success: true, count: 0 };
+        }
+
+        // Delete files from filesystem
+        // We use Promise.allSettled to ensure we try to delete all files even if some fail
+        await Promise.allSettled(images.map(img => deleteFile(img.url)));
+
+        // Delete from DB
+        const result = await GalleryModel.deleteMany({ id: { $in: ids } });
+
+        revalidatePath("/gallery");
+        revalidatePath("/");
+        revalidatePath("/admin/gallery");
+
+        return { success: true, count: result.deletedCount };
+    } catch (error) {
+        console.error("Failed to bulk delete gallery images:", error);
+        return { success: false, error: "Failed to delete images" };
+    }
+}
+
 export async function getGalleryImages(limit?: number): Promise<GalleryImage[]> {
     try {
         await connectDB();
