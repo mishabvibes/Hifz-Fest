@@ -1,10 +1,12 @@
 import { getLiveScores, getTeams } from "@/lib/data";
+import { getGalleryImages } from "@/actions/gallery";
 import { HomeRealtime } from "@/components/home-realtime";
 
 async function getHomeData() {
-  const [teams, live] = await Promise.all([
+  const [teams, live, galleryImages] = await Promise.all([
     getTeams(),
     getLiveScores(),
+    getGalleryImages(5), // Limit to 5 latest images
   ]);
 
   const scoreMap = new Map(live.map((item) => [item.team_id, item.total_points]));
@@ -14,7 +16,7 @@ async function getHomeData() {
       (scoreMap.get(a.id) ?? a.total_points),
   );
 
-  return { teams: sorted, live: scoreMap };
+  return { teams: sorted, live: scoreMap, galleryImages };
 }
 
 export const metadata = {
@@ -23,7 +25,7 @@ export const metadata = {
 };
 
 export default async function HomePage() {
-  const { teams, live } = await getHomeData();
+  const { teams, live, galleryImages } = await getHomeData();
 
-  return <HomeRealtime teams={teams} liveScores={live} />;
+  return <HomeRealtime teams={teams} liveScores={live} galleryImages={galleryImages} />;
 }

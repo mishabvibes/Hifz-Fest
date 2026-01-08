@@ -284,3 +284,10 @@ export interface InstituteRegistry {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface GalleryImage {
+  id: string;
+  url: string;
+  label: string;
+  createdAt: string;
+}

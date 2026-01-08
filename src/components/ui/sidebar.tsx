@@ -20,6 +20,7 @@ import {
   BarChart,
   Trophy,
   Calculator,
+  Image as ImageIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -56,6 +57,7 @@ const ICONS = {
   predictions: Trophy,
   festory: MessageCircle,
   calculator: Calculator,
+  gallery: ImageIcon,
 
 } satisfies Record<string, LucideIcon>;
 
